@@ -218,7 +218,7 @@ OVERALL_FRANCHISE_MASTER = {
     "Staze HD BlendPro Beauty Blender Sponge (01 Teardrop) 1 pc": "Blender Sponge",
     "Staze HD BlendPro Beauty Blender Sponge (02 Slanted) 1 pc": "Blender Sponge",
     "Staze 9to9 Triple Treat Stacked Face Palette (01 Main Character) 7.5 g": "Face Palette",
-    "Staze 9to9 She欽楩 Expensive Body Shimmer 50 ml": "Body Shimmer",
+    "Staze 9to9 She’s Expensive Body Shimmer 50 ml": "Body Shimmer",
     "Staze 3 in 1 Lipstick Transferproof Lipstick (Nude Orchid) 3.8 g": "3 in 1 Lipstick",
     "Staze 3 in 1 Transferproof Lipstick (Truffle Blush) 3.8 g": "3 in 1 Lipstick",
     "Staze Velvet Kiss Lipstick (01 Desert Rose) 6 g": "3 in 1 Lipstick",
@@ -236,58 +236,58 @@ OVERALL_FRANCHISE_MASTER = {
     "Staze 9to9 She’s Expensive Body Shimmer 50 ml": "Body Shimmer"
 }
 
-# Master Campaign Name -> Fields Lookup Dictionary for Ads Dump VLOOKUP
+# Master Campaign Name -> Fields Lookup Dictionary for Ads Dump VLOOKUP (With Correct Ad type & Targeting Type mapping)
 ADS_CAMPAIGN_MASTER = {
-    "staze | gloss lock | pb | bounce": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Category", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | gloss lock | pb | match product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Match Product", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | gloss lock | pb | similar product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | gloss lock | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | gloss lock | pb | generic": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | gloss lock | pb | generic | precise": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | gloss lock | pb | generic | broad": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | lip crayon | pb | generic": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | lip crayon | pb | comp": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Competitor", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | lip crayon | pb | cart recommendation": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Cart Recommendation", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | lip crayon | pb | similar product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | mascara | pb | comp": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Competitor", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | mascara | pb | ct": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Category", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | mascara | pb | generic": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | mascara | pb | similar product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | twin flame | pb | comp": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Competitor", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | twin flame | pb | generic | hpt": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | twin flame | pb | similar product | hpt": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | yummy | pb | cart recommendation": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Cart Recommendation", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | yummy | pb | comp": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Competitor", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | yummy | pb | ct": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Category", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | yummy | pb | generic": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | yummy | pb | match product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Match Product", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | yummy | pb | similar product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | yummy | pb | generic | menu search": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | lip crayon | baseline | pan india | kw | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | lip crayon | pb | ct": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Category", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | lip crayon | pan india | kw | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | 9to9 | mascara | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | gloss lock | top 5a | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | yummy | pan india | kw | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | twin flame | top 5a | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | lip crayon | pan india | comp | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | 9to9 | pan india | kw | gen": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Multiple", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | lip crayon | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | yummy | pan india | comp | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | nude shimmer | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Nude Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | all products | pan india | brand | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "All Products", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | gloss lock | pb | cart recommendation": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Cart Recommendation", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | twin flame | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | mascara | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | gloss lock | pan india | pgt | comp | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | yummy | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | lip crayon | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | compact | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Compact", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | gloss lock | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | twin flame | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | lip crayon | pan india | pa | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | yummy | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | body shimmer | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Body Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"}
+    "staze | gloss lock | pb | bounce": {"City": "Pan India", "Ad type": "Product Booster (Category)", "Targeting Type": "Category", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | match product": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | similar product": {"City": "Pan India", "Ad type": "Recommendation ads", "Targeting Type": "Recommendation ads", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | gloss lock | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | generic": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | generic | precise": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | generic | broad": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | generic": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | comp": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Comp", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | cart recommendation": {"City": "Pan India", "Ad type": "Recommendation ads", "Targeting Type": "Recommendation ads", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | similar product": {"City": "Pan India", "Ad type": "Recommendation ads", "Targeting Type": "Recommendation ads", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | mascara | pb | comp": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Comp", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | mascara | pb | ct": {"City": "Pan India", "Ad type": "Product Booster (Category)", "Targeting Type": "Category", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | mascara | pb | generic": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | mascara | pb | similar product": {"City": "Pan India", "Ad type": "Recommendation ads", "Targeting Type": "Recommendation ads", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | twin flame | pb | comp": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Comp", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | twin flame | pb | generic | hpt": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | twin flame | pb | similar product | hpt": {"City": "Pan India", "Ad type": "Recommendation ads", "Targeting Type": "Recommendation ads", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | cart recommendation": {"City": "Pan India", "Ad type": "Recommendation ads", "Targeting Type": "Recommendation ads", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | comp": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Comp", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | ct": {"City": "Pan India", "Ad type": "Product Booster (Category)", "Targeting Type": "Category", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | generic": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | match product": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | similar product": {"City": "Pan India", "Ad type": "Recommendation ads", "Targeting Type": "Recommendation ads", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | generic | menu search": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | baseline | pan india | kw | gen | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | ct": {"City": "Pan India", "Ad type": "Product Booster (Category)", "Targeting Type": "Category", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | kw | pgt | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | 9to9 | mascara | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | gloss lock | top 5a | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | yummy | pan india | kw | gen | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | twin flame | top 5a | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | comp | pgt | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Comp", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | 9to9 | pan india | kw | gen": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Multiple", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | yummy | pan india | comp | pgt | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Comp", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | nude shimmer | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Nude Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | all products | pan india | brand | pgt | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Brand", "Franchise": "All Products", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | cart recommendation": {"City": "Pan India", "Ad type": "Recommendation ads", "Targeting Type": "Recommendation ads", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | twin flame | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | mascara | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | gloss lock | pan india | pgt | comp | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Comp", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | yummy | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | compact | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Compact", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | gloss lock | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | twin flame | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | pa | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | yummy | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | body shimmer | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Booster (Keyword)", "Targeting Type": "Generic", "Franchise": "Body Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"}
 }
 
 MONTH_ORDER_ASC = {
@@ -1859,7 +1859,7 @@ if uploaded_files:
 
         raw_camp_series = safe_get_col(ads_dump_df, ['Campaign Name', 'Campaign', 'Campaign ID'])
         raw_city = safe_get_col(ads_dump_df, ['City', 'Supply City', 'city_name'])
-        raw_ad_type = safe_get_col(ads_dump_df, ['Ad type', 'Ad Type', 'Match Type', 'Ad Type Combined'])
+        raw_ad_type = safe_get_col(ads_dump_df, ['Ad type', 'Ad Type'])
         raw_target = safe_get_col(ads_dump_df, ['Targeting Type', 'Targeting'])
         raw_franchise = safe_get_col(ads_dump_df, ['Franchise', 'Brand'])
         raw_cat = safe_get_col(ads_dump_df, ['Category', 'category'])
@@ -1871,8 +1871,8 @@ if uploaded_files:
             camp_val = row[raw_camp_series.name] if isinstance(raw_camp_series, pd.Series) and raw_camp_series.name in row else (raw_camp_series.iloc[0] if isinstance(raw_camp_series, pd.Series) and not raw_camp_series.empty else np.nan)
             
             c_fallback = row.get(raw_city.name, "Pan India") if isinstance(raw_city, pd.Series) and raw_city.name in row else "Pan India"
-            ad_fallback = row.get(raw_ad_type.name, "Product Listing") if isinstance(raw_ad_type, pd.Series) and raw_ad_type.name in row else "Product Listing"
-            tg_fallback = row.get(raw_target.name, "Keyword") if isinstance(raw_target, pd.Series) and raw_target.name in row else "Keyword"
+            ad_fallback = row.get(raw_ad_type.name, "Product Booster (Keyword)") if isinstance(raw_ad_type, pd.Series) and raw_ad_type.name in row else "Product Booster (Keyword)"
+            tg_fallback = row.get(raw_target.name, "Generic") if isinstance(raw_target, pd.Series) and raw_target.name in row else "Generic"
             fr_fallback = row.get(raw_franchise.name, "Staze") if isinstance(raw_franchise, pd.Series) and raw_franchise.name in row else "Staze"
             cat_fallback = row.get(raw_cat.name, "Beauty & Personal Care") if isinstance(raw_cat, pd.Series) and raw_cat.name in row else "Beauty & Personal Care"
             sub_fallback = row.get(raw_sub_cat.name, "Makeup") if isinstance(raw_sub_cat, pd.Series) and raw_sub_cat.name in row else "Makeup"
