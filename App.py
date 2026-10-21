@@ -185,7 +185,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center;'>Upload up to 5 monthly Ad Campaign spreadsheets/CSV files and up to 5 Sales Reports (.csv, .xlsx, .xls) to analyze TACOS, TROAS, Overall Sales, Spends, and multi-metric trends without compression loss.</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Upload Ad Campaign reports and overall sales reports (supporting both schema types). System automatically filters ads with <b>'staze'</b> in Campaign Name and sales products with <b>'staze'</b> in Product Name.</p>", unsafe_allow_html=True)
 
 def style_and_export_pivot(pivot_df, sheet_name="Comparison"):
     buffer = io.BytesIO()
@@ -345,7 +345,7 @@ with col5:
     f5 = st.file_uploader("Upload Ad File 5", type=ad_file_types, key="file5")
     if f5: uploaded_files.append(f5)
 
-st.markdown("### 📥 Upload Sales Reports (Up to 5)")
+st.markdown("### 📥 Upload Sales Reports (Supports both sales file schemas - Up to 5)")
 scol1, scol2, scol3, scol4, scol5 = st.columns(5)
 uploaded_sales_files = []
 
@@ -371,7 +371,8 @@ sales_dfs_list = []
 if uploaded_sales_files:
     for s_file in uploaded_sales_files:
         try:
-            if s_file.name.lower().endswith('.csv'):
+            fname_lower = s_file.name.lower()
+            if fname_lower.endswith('.csv'):
                 sdf = pd.read_csv(s_file, low_memory=False)
                 sales_dfs_list.append(sdf)
             else:
@@ -384,24 +385,66 @@ if uploaded_sales_files:
 
 master_sales_df = pd.DataFrame()
 if sales_dfs_list:
-    master_sales_df = pd.concat(sales_dfs_list, ignore_index=True)
-    date_cand = next((c for c in ['Order Date', 'date', 'Date', 'ORDER_DATE'] if c in master_sales_df.columns), None)
-    gross_cand = next((c for c in ['Total Gross Bill Amount', 'Gross Amount', 'Total Amount', 'Bill Amount'] if c in master_sales_df.columns), None)
-    qty_cand = next((c for c in ['Quantity', 'Qty', 'Units'] if c in master_sales_df.columns), None)
-            
-    if date_cand:
-        master_sales_df['_sales_dt'] = pd.to_datetime(master_sales_df[date_cand], errors='coerce')
+    raw_sales_concat = pd.concat(sales_dfs_list, ignore_index=True)
+    
+    # Understand and unify common fields across different overall sales schemas (e.g. Sales Summary vs CSV dump)
+    # Common Product/Item Name column
+    prod_col = next((c for c in ['Product Name', 'Item Name', 'product_name', 'item_name', 'Product'] if c in raw_sales_concat.columns), None)
+    # Common Date column
+    date_col = next((c for c in ['Order Date', 'date', 'Date', 'ORDER_DATE', 'timestamp'] if c in raw_sales_concat.columns), None)
+    # Common Gross Amount / Revenue column
+    gross_col = next((c for c in ['Total Gross Bill Amount', 'Gross Amount', 'Total Amount', 'Bill Amount', 'revenue', 'sales_amount'] if c in raw_sales_concat.columns), None)
+    # Common Quantity / Units column
+    qty_col = next((c for c in ['Quantity', 'Qty', 'Units', 'qty_sold'] if c in raw_sales_concat.columns), None)
+    # Common City / State columns
+    city_col = next((c for c in ['Supply City', 'city_name', 'City'] if c in raw_sales_concat.columns), None)
+    state_col = next((c for c in ['Supply State', 'Region', 'State'] if c in raw_sales_concat.columns), None)
+
+    # Standardize to internal columns
+    master_sales_df = raw_sales_concat.copy()
+    if prod_col:
+        master_sales_df['_product_name'] = master_sales_df[prod_col].astype(str)
+    else:
+        master_sales_df['_product_name'] = ""
+
+    # Filter overall sales strictly for products with "staze" mentioned in the product name
+    master_sales_df = master_sales_df[master_sales_df['_product_name'].str.lower().str.contains('staze', na=False)]
+
+    if date_col:
+        master_sales_df['_sales_dt'] = pd.to_datetime(master_sales_df[date_col], errors='coerce')
         master_sales_df['Month'] = master_sales_df['_sales_dt'].dt.strftime('%B').str.upper()
         master_sales_df['Date_str'] = master_sales_df['_sales_dt'].dt.strftime('%Y-%m-%d')
         master_sales_df['Day'] = master_sales_df['_sales_dt'].dt.day
-    if gross_cand:
-        master_sales_df['_gross_amt'] = pd.to_numeric(master_sales_df[gross_cand], errors='coerce').fillna(0.0)
     else:
-        master_sales_df['_gross_amt'] = 0.0
-    if qty_cand:
-        master_sales_df['_qty'] = pd.to_numeric(master_sales_df[qty_cand], errors='coerce').fillna(0.0)
+        master_sales_df['Month'] = "UNKNOWN"
+        master_sales_df['Date_str'] = np.nan
+        master_sales_df['Day'] = 1
+
+    if gross_col:
+        master_sales_df['_gross_amt'] = pd.to_numeric(master_sales_df[gross_col].astype(str).str.replace(',', ''), errors='coerce').fillna(0.0)
+    else:
+        # Fallback calculation if Selling Price & Quantity exist
+        sp_col = next((c for c in ['Selling Price (Rs)', 'MRP (Rs)', 'mrp', 'price'] if c in master_sales_df.columns), None)
+        q_col = qty_col if qty_col else None
+        if sp_col and q_col:
+            master_sales_df['_gross_amt'] = pd.to_numeric(master_sales_df[sp_col], errors='coerce').fillna(0.0) * pd.to_numeric(master_sales_df[q_col], errors='coerce').fillna(1.0)
+        else:
+            master_sales_df['_gross_amt'] = 0.0
+
+    if qty_col:
+        master_sales_df['_qty'] = pd.to_numeric(master_sales_df[qty_col], errors='coerce').fillna(1.0)
     else:
         master_sales_df['_qty'] = 1.0
+
+    if city_col:
+        master_sales_df['Supply City'] = master_sales_df[city_col]
+    else:
+        master_sales_df['Supply City'] = "Unknown"
+
+    if state_col:
+        master_sales_df['Supply State'] = master_sales_df[state_col]
+    else:
+        master_sales_df['Supply State'] = "Unknown"
 
 if uploaded_files:
     consolidated_dfs = []
@@ -502,6 +545,12 @@ if uploaded_files:
     if consolidated_dfs:
         final_df = pd.concat(consolidated_dfs, ignore_index=True)
         
+        # Filter ads campaign name strictly for those with "staze" mentioned in the campaign name
+        camp_col_candidates = [c for c in ['Campaign Name', 'Campaign', 'CampaignId', 'Campaign ID'] if c in final_df.columns]
+        if camp_col_candidates:
+            c_col = camp_col_candidates[0]
+            final_df = final_df[final_df[c_col].astype(str).str.lower().str.contains('staze', na=False)]
+
         base_cols = ['Month', 'Tab Name', 'Date']
         product_listing_cols = []
         for df in consolidated_dfs:
@@ -1019,7 +1068,7 @@ if uploaded_files:
 
         has_sales_data = not master_sales_df.empty and '_sales_dt' in master_sales_df.columns
 
-        st.markdown("### 📈 Overall Campaign Performance Dashboard")
+        st.markdown("### 📈 Overall Campaign Performance Dashboard (Filtered for 'staze')")
         
         if has_sales_data:
             f_sales_df = master_sales_df if selected_month == "All Months" else master_sales_df[master_sales_df['Month'] == selected_month]
@@ -1056,7 +1105,7 @@ if uploaded_files:
         ])
 
         with main_tab1:
-            st.caption("Inspect individual sheets/files tab-by-tab or use dedicated Ads & Sales Raw filters below.")
+            st.caption("Inspect individual files or use flexible campaign and product substring search (e.g. typing 'Sta' reveals all matching campaigns/products).")
             
             raw_sub_tab1, raw_sub_tab2, raw_sub_tab3 = st.tabs([
                 "📂 Standard File & Sheet Inspector",
@@ -1083,11 +1132,20 @@ if uploaded_files:
                 campaign_col_candidates = [c for c in ['Campaign Name', 'Campaign', 'CampaignId', 'Campaign ID'] if c in final_df.columns]
                 if campaign_col_candidates:
                     camp_col_name = campaign_col_candidates[0]
-                    unique_campaigns = sorted([str(x) for x in final_df[camp_col_name].dropna().unique()])
-                    selected_campaign_filter = st.selectbox("Select Campaign Name for Ads Raw View & Export:", ["All Campaigns"] + unique_campaigns, key="ads_raw_campaign_filter")
+                    
+                    # Flexible text search query for campaign name supporting syllables like 'Sta'
+                    campaign_search_input = st.text_input("Type Campaign Name Syllable / Keyword (e.g., 'Sta', 'staze'):", "Sta", key="ads_raw_search_input")
+                    
+                    all_campaigns_list = sorted([str(x) for x in final_df[camp_col_name].dropna().unique()])
+                    filtered_campaigns_list = [c for c in all_campaigns_list if campaign_search_input.strip().lower() in c.lower()]
+
+                    selected_campaign_filter = st.selectbox("Select Matching Campaign:", ["All Matching Campaigns"] + filtered_campaigns_list, key="ads_raw_campaign_filter")
 
                     ads_filtered_raw = final_df.copy()
-                    if selected_campaign_filter != "All Campaigns":
+                    if campaign_search_input.strip():
+                        ads_filtered_raw = ads_filtered_raw[ads_filtered_raw[camp_col_name].astype(str).str.lower().str.contains(campaign_search_input.strip().lower(), na=False)]
+
+                    if selected_campaign_filter != "All Matching Campaigns":
                         ads_filtered_raw = ads_filtered_raw[ads_filtered_raw[camp_col_name].astype(str) == selected_campaign_filter]
 
                     f_ad_sales = round(ads_filtered_raw['_sales'].sum(), 2)
@@ -1117,7 +1175,7 @@ if uploaded_files:
                     st.download_button(
                         label="📥 Download Filtered Ads Raw Data (.xlsx)",
                         data=ads_raw_excel_bytes,
-                        file_name=f"Ads_Raw_Filtered_{selected_campaign_filter.replace(' ', '_')[:20]}.xlsx",
+                        file_name=f"Ads_Raw_Filtered_{campaign_search_input.strip().replace(' ', '_')[:15]}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         key="btn_dl_ads_raw_filtered"
                     )
@@ -1127,10 +1185,10 @@ if uploaded_files:
             with raw_sub_tab3:
                 st.markdown("#### 📦 Overall Sales Raw Data Product Syllable Filter & Overview")
                 if not master_sales_df.empty:
-                    product_col_candidates = [c for c in ['Item Name', 'Product Name', 'Product', 'item_name'] if c in master_sales_df.columns]
+                    product_col_candidates = [c for c in ['Product Name', 'Item Name', 'product_name', 'item_name', 'Product'] if c in master_sales_df.columns]
                     if product_col_candidates:
                         prod_col_name = product_col_candidates[0]
-                        product_syllable_input = st.text_input("Type Product Name Syllable / Keyword (e.g., 'oil', 'masala', 'atta'):", "", key="sales_raw_syllable_input")
+                        product_syllable_input = st.text_input("Type Product Name Syllable / Keyword (e.g., 'Sta', 'staze', 'oil'):", "Sta", key="sales_raw_syllable_input")
 
                         sales_filtered_raw = master_sales_df.copy()
                         if product_syllable_input.strip():
@@ -1163,7 +1221,7 @@ if uploaded_files:
                         st.download_button(
                             label="📥 Download Filtered Sales Raw Data (.xlsx)",
                             data=sales_raw_excel_bytes,
-                            file_name=f"Overall_Sales_Filtered_{product_syllable_input.strip().replace(' ', '_')[:15] or 'All'}.xlsx",
+                            file_name=f"Overall_Sales_Filtered_{product_syllable_input.strip().replace(' ', '_')[:15]}.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                             key="btn_dl_sales_raw_filtered"
                         )
@@ -1173,7 +1231,7 @@ if uploaded_files:
                     st.info("Please upload Sales Reports to use this feature.")
 
         with main_tab2:
-            st.caption("Preview the combined dataset across all uploaded files[cite: 7].")
+            st.caption("Preview the combined dataset across all uploaded files.")
             preview_clean_df = final_df.drop(columns=['_impressions', '_direct_atc', '_indirect_atc', '_atc', '_direct_orders', '_indirect_orders', '_orders', '_direct_sales', '_indirect_sales', '_sales', '_budget_consumed', '_date_dt', '_most_viewed_position', 'Ad Type Combined'], errors='ignore')
             master_styled = format_dashboard_dataframe(preview_clean_df.head(100)).style.set_properties(**{
                 'text-align': 'center', 'vertical-align': 'middle'
@@ -1407,7 +1465,7 @@ if uploaded_files:
                     state_options.append(display_label)
                     state_mapping[display_label] = row['Supply State']
 
-                sel_state_label = st.selectbox("Select Supply State (Min 1 Unit Sold):", state_options, key="city_state_sel")
+                sel_state_label = st.selectbox("Select Supply State:", state_options, key="city_state_sel")
                 sel_state = state_mapping.get(sel_state_label, "All States")
 
                 if sel_state != "All States" and 'Supply State' in city_filtered_sales.columns:
@@ -1432,24 +1490,24 @@ if uploaded_files:
                     city_options.append(display_label)
                     city_mapping[display_label] = row['Supply City']
 
-                sel_city_label = st.selectbox("Select Supply City (Min 1 Unit Sold):", city_options, key="city_city_sel")
+                sel_city_label = st.selectbox("Select Supply City:", city_options, key="city_city_sel")
                 sel_city = city_mapping.get(sel_city_label, "All Cities")
 
                 if sel_city != "All Cities" and 'Supply City' in city_filtered_sales.columns:
                     city_filtered_sales = city_filtered_sales[city_filtered_sales['Supply City'] == sel_city]
 
-                prod_col = next((c for c in ['Product Name', 'Item Name', 'Product'] if c in city_filtered_sales.columns), None)
-                qty_col = next((c for c in ['Quantity', 'Qty', 'Units'] if c in city_filtered_sales.columns), None)
-                amt_col = next((c for c in ['Total Gross Bill Amount', 'Gross Amount', 'Selling Price (Rs)'] if c in city_filtered_sales.columns), None)
+                prod_col_name = next((c for c in ['Product Name', 'Item Name', 'product_name', 'item_name', 'Product'] if c in city_filtered_sales.columns), None)
+                qty_col_name = next((c for c in ['Quantity', 'Qty', 'Units', '_qty'] if c in city_filtered_sales.columns), None)
+                amt_col_name = next((c for c in ['Total Gross Bill Amount', 'Gross Amount', '_gross_amt', 'Selling Price (Rs)'] if c in city_filtered_sales.columns), None)
 
-                if prod_col and qty_col and amt_col:
-                    prod_agg = city_filtered_sales.groupby(prod_col).agg(
-                        Units_Sold=(qty_col, 'sum'),
-                        Total_Sales=(amt_col, 'sum')
+                if prod_col_name and qty_col_name and amt_col_name:
+                    prod_agg = city_filtered_sales.groupby(prod_col_name).agg(
+                        Units_Sold=(qty_col_name, 'sum'),
+                        Total_Sales=(amt_col_name, 'sum')
                     ).reset_index().sort_values(by='Total_Sales', ascending=False)
 
                     prod_agg = prod_agg.rename(columns={
-                        prod_col: 'PRODUCT NAME',
+                        prod_col_name: 'PRODUCT NAME',
                         'Units_Sold': 'UNITS SOLD',
                         'Total_Sales': 'TOTAL SALES AMOUNT (₹)'
                     })
@@ -1462,7 +1520,7 @@ if uploaded_files:
                     st.dataframe(prod_styled, use_container_width=True, hide_index=True)
                     
                     st.markdown("---")
-                    st.markdown("#### 🥧 Top 5 States & Top 5 Cities Contribution to Overall Sales & Orders (with AOV)")
+                    st.markdown("#### 🥧 Top 5 States & Top 5 Cities Contribution to Overall Sales & Orders")
                     
                     state_contrib = state_agg[state_agg['Total_Sales'] > 0].sort_values(by='Total_Sales', ascending=False).head(5).copy()
                     state_contrib['Supply State'] = state_contrib['Supply State'].astype(str).str.title()
@@ -1487,17 +1545,8 @@ if uploaded_files:
                                 title=f'Top 5 States Contribution (₹)',
                                 color_discrete_sequence=['#285B7A', '#4A90C2', '#6AA6CF', '#8ABCE3', '#B4D6F0']
                             )
-                            fig_state_pie.update_traces(
-                                textposition='inside', 
-                                textinfo='percent+label',
-                                hovertemplate='<b>State:</b> %{label}<br><b>Sales:</b> ₹%{value:,.2f}<br><b>Orders:</b> %{customdata[0]:,}<br><b>AOV:</b> ₹%{customdata[1]:,.2f}<br><b>Share:</b> %{percent}<extra></extra>',
-                                customdata=np.stack((state_contrib['Total_Orders'], state_contrib['AOV']), axis=-1)
-                            )
-                            fig_state_pie.update_layout(
-                                template='plotly_white',
-                                height=400,
-                                font=dict(family='Arial, sans-serif', color='#29465B')
-                            )
+                            fig_state_pie.update_traces(textposition='inside', textinfo='percent+label')
+                            fig_state_pie.update_layout(template='plotly_white', height=400)
                             st.plotly_chart(fig_state_pie, use_container_width=True)
 
                     with col_p2:
@@ -1509,17 +1558,8 @@ if uploaded_files:
                                 title=f'Top 5 Cities Contribution (₹)',
                                 color_discrete_sequence=['#0F4C81', '#1D63B8', '#3882E6', '#60A5FA', '#93C5FD']
                             )
-                            fig_city_pie.update_traces(
-                                textposition='inside', 
-                                textinfo='percent+label',
-                                hovertemplate='<b>City:</b> %{label}<br><b>Sales:</b> ₹%{value:,.2f}<br><b>Orders:</b> %{customdata[0]:,}<br><b>AOV:</b> ₹%{customdata[1]:,.2f}<br><b>Share:</b> %{percent}<extra></extra>',
-                                customdata=np.stack((city_contrib['Total_Orders'], city_contrib['AOV']), axis=-1)
-                            )
-                            fig_city_pie.update_layout(
-                                template='plotly_white',
-                                height=400,
-                                font=dict(family='Arial, sans-serif', color='#29465B')
-                            )
+                            fig_city_pie.update_traces(textposition='inside', textinfo='percent+label')
+                            fig_city_pie.update_layout(template='plotly_white', height=400)
                             st.plotly_chart(fig_city_pie, use_container_width=True)
                 else:
                     st.info("Required product/sales columns not found in sales report.")
@@ -1629,20 +1669,20 @@ if uploaded_files:
                 s_dump_df['date'] = np.nan
 
             overall_export_mapping = {
-                'item_id': safe_get_col(s_dump_df, ['item_id', 'Item ID', 'SKU ID', 'Product ID']),
-                'item_name': safe_get_col(s_dump_df, ['item_name', 'Item Name', 'Product Name', 'Product']),
-                'Franchise': safe_get_col(s_dump_df, ['Franchise', 'Brand']),
+                'item_id': safe_get_col(s_dump_df, ['Item Id', 'item_id', 'SKU ID', 'Product ID']),
+                'item_name': s_dump_df['_product_name'],
+                'Franchise': safe_get_col(s_dump_df, ['Brand Name', 'Franchise', 'Brand']),
                 'manufacturer_id': safe_get_col(s_dump_df, ['manufacturer_id', 'Manufacturer ID']),
                 'manufacturer_name': safe_get_col(s_dump_df, ['manufacturer_name', 'Manufacturer', 'Manufacturer Name']),
                 'city_id': safe_get_col(s_dump_df, ['city_id', 'City ID']),
-                'city_name': safe_get_col(s_dump_df, ['city_name', 'City', 'Supply City']),
-                'category': safe_get_col(s_dump_df, ['category', 'Category']),
+                'city_name': safe_get_col(s_dump_df, ['Supply City', 'city_name', 'City']),
+                'category': safe_get_col(s_dump_df, ['Business Category', 'category', 'Category']),
                 'date': s_dump_df['date'],
                 'Duration (Month)': s_dump_df['Duration (Month)'],
                 'Duration (Week)': s_dump_df['Duration (Week)'],
                 'qty_sold': s_dump_df['_qty'],
-                'mrp': safe_get_col(s_dump_df, ['mrp', 'MRP', 'Selling Price (Rs)']),
-                'Region': safe_get_col(s_dump_df, ['Region', 'Supply State', 'State'])
+                'mrp': safe_get_col(s_dump_df, ['MRP (Rs)', 'mrp', 'MRP', 'Selling Price (Rs)']),
+                'Region': safe_get_col(s_dump_df, ['Supply State', 'Region', 'State'])
             }
             final_overall_dump_export = pd.DataFrame(overall_export_mapping)
         else:
