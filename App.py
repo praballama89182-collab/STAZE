@@ -187,6 +187,111 @@ st.markdown("""
 
 st.markdown("<p style='text-align: center;'>Upload Ad Campaign reports and Overall Sales reports. System automatically filters campaigns and products containing <b>'staze'</b>, computing total sales by summing MRP values directly across all levels.</p>", unsafe_allow_html=True)
 
+# Master Item -> Franchise Lookup Dictionary in App Memory
+OVERALL_FRANCHISE_MASTER = {
+    "Staze Gloss Lock 2-in-1 Liquid Lipstick (I'm Shy) 7 g": "2 in 1 Gloss Lock",
+    "Staze Gloss Lock 2 in 1 Liquid Lipstick (I'm Pretty) 7 g": "2 in 1 Gloss Lock",
+    "Staze Gloss Lock 2 in 1 Liquid Lipstick (I'm Happy) 7 g": "2 in 1 Gloss Lock",
+    "Staze Gloss Lock 2 in 1 Liquid Lipstick (I'm Bubbly) 7 g": "2 in 1 Gloss Lock",
+    "Staze Gloss Lock 2 in 1 Liquid Lipstick Lipstick (I'm Feisty) 7 g": "2 in 1 Gloss Lock",
+    "Staze Gloss Lock 2 in 1 Liquid Lipstick (I'm Cute) 7 g": "2 in 1 Gloss Lock",
+    "Staze Twin Flame 2 in 1 Lipstick + Lip Liner (03 Match-Made) 2 g": "2 in 1 Twin Flame",
+    "Staze Twin Flame 2 in 1 Lipstick + Lip Liner (05 Hot Date) 2 g": "2 in 1 Twin Flame",
+    "Staze Twin Flame 2-in-1 Lip Liner + Lipstick (Love Language) 2 g": "2 in 1 Twin Flame",
+    "Staze Twin Flame 2 in 1 Lip Liner & Lipstick (02 Soft Launch) 2 g": "2 in 1 Twin Flame",
+    "Staze Twin Flame 2 in 1 Lip Liner & Lipstick (04 Main Squeeze) 2 g": "2 in 1 Twin Flame",
+    "Staze Y.U.M.M.Y. Lip Gloss (Lush Berry) 2 g": "Yummy",
+    "Staze 9to9 Y.U.M.M.Y. Lip Gloss Balm (04 Strawberry Jelly) 2 g": "Yummy",
+    "Staze Y.U.M.M.Y. Lip Gloss (Salted Caramel) 2 g": "Yummy",
+    "Staze 9to9 Y.U.M.M.Y. Lip Gloss Balm (05 Espresso Brown) 2 g": "Yummy",
+    "Staze 9to9 Pout On Lip Crayon (10 Royally Ruby) 3.5 g": "Lip Crayon",
+    "Staze 9to9 Pout On Lip Crayon (01 Nude Whisper) 3.5 g": "Lip Crayon",
+    "Staze 9to9 Pout On Lip Crayon (Dusty Rose) 10 g": "Lip Crayon",
+    "Staze 9to9 Pout On Lip Crayon (Fine Wine) 10 g": "Lip Crayon",
+    "Staze 9to9 Pout On Lip Crayon (Downtown Blush) 10 g": "Lip Crayon",
+    "Staze 9to9 Pout On Lip Crayon (Mauve On) 3.5 g": "Lip Crayon",
+    "Staze 9to9 Pout On Lip Crayon (05 Cocoa Loco) 3.5 g": "Lip Crayon",
+    "Staze 9 to 9 HD Glow Foundation (228C Latte) 18 ml": "Lip Crayon",
+    "Staze 9to9 Pout On Lip Crayon (07 Oh My Pink) 3.5 g": "Lip Crayon",
+    "Staze 9to9 Pout On Lip Crayon (04 Coffee Talk) 3.5 g": "Lip Crayon",
+    "Staze Lengthening & Volumizing Tubing Mascara (01 Blackest Black) 5 ml": "Mascara",
+    "Staze HD BlendPro Beauty Blender Sponge (01 Teardrop) 1 pc": "Blender Sponge",
+    "Staze HD BlendPro Beauty Blender Sponge (02 Slanted) 1 pc": "Blender Sponge",
+    "Staze 9to9 Triple Treat Stacked Face Palette (01 Main Character) 7.5 g": "Face Palette",
+    "Staze 9to9 She欽楩 Expensive Body Shimmer 50 ml": "Body Shimmer",
+    "Staze 3 in 1 Lipstick Transferproof Lipstick (Nude Orchid) 3.8 g": "3 in 1 Lipstick",
+    "Staze 3 in 1 Transferproof Lipstick (Truffle Blush) 3.8 g": "3 in 1 Lipstick",
+    "Staze Velvet Kiss Lipstick (01 Desert Rose) 6 g": "3 in 1 Lipstick",
+    "Staze 3 in 1 Transferproof Lipstick (Caramel Rose) 3.8 g": "3 in 1 Lipstick",
+    "Staze 9to9 Studio Finish Professional Grade + Seamless Finish Makeup Brush Set 1 set": "Makeup Brushes",
+    "Staze Transferproof Matte Liquid Lipstick (Pink Mood On) 4 ml": "Liquid Lipsticks",
+    "Staze Transferproof Matte Liquid Lipstick (Cocoa Crush) 4 ml": "Liquid Lipsticks",
+    "Staze Transferproof Matte Liquid Lipstick (Nude Attitude) 4 ml": "Liquid Lipsticks",
+    "Staze Makeup Cosmetics Sharpener 1 pc": "Cosmetics Sharpener",
+    "Staze 2 in 1 Liquid Sindoor (Rich Red, Deep Maroon) 2 x 2 ml": "2 in 1 Liquid Sindoor",
+    "Staze 9to9 The Signature Lip Crayons Lipstick Kit 3 x 3.5 g": "Lip Crayon",
+    "Staze Moments of Love Lipstick Kit (Assorted) 3 x 4 ml": "Lipstick Kit",
+    "Staze Instant Brow Definer with Spoolie (01 Natural Brown) 0.9 g": "Brow Definer",
+    "Staze HD Bright Oil-Controlling Compact (128C Cashmere) 9 g": "Compact",
+    "Staze 9to9 She’s Expensive Body Shimmer 50 ml": "Body Shimmer"
+}
+
+# Master Campaign Name -> Fields Lookup Dictionary in App Memory for Ads Dump VLOOKUP
+ADS_CAMPAIGN_MASTER = {
+    "staze | gloss lock | pb | bounce": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Category", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | match product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Match Product", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | similar product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | gloss lock | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | generic": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | generic | precise": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | generic | broad": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | generic": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | comp": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Competitor", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | cart recommendation": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Cart Recommendation", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | similar product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | mascara | pb | comp": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Competitor", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | mascara | pb | ct": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Category", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | mascara | pb | generic": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | mascara | pb | similar product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | twin flame | pb | comp": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Competitor", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | twin flame | pb | generic | hpt": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | twin flame | pb | similar product | hpt": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | cart recommendation": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Cart Recommendation", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | comp": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Competitor", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | ct": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Category", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | generic": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | match product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Match Product", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | similar product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Similar Product", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | yummy | pb | generic | menu search": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Generic", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | baseline | pan india | kw | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | lip crayon | pb | ct": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Category", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | kw | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | 9to9 | mascara | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | gloss lock | top 5a | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | yummy | pan india | kw | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | twin flame | top 5a | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | comp | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | 9to9 | pan india | kw | gen": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Multiple", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | yummy | pan india | comp | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | nude shimmer | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Nude Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | twin flame | top 5a | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | all products | pan india | brand | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "All Products", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | gloss lock | pb | cart recommendation": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Cart Recommendation", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | twin flame | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | mascara | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Mascara", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | gloss lock | pan india | pgt | comp | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | yummy | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | compact | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Compact", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | gloss lock | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | twin flame | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | lip crayon | pan india | pa | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | yummy | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | nude shimmer | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Nude Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
+    "staze | 9to9 | body shimmer | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Body Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"}
+}
+
 MONTH_ORDER_ASC = {
     "JANUARY": 1, "FEBRUARY": 2, "MARCH": 3, "APRIL": 4,
     "MAY": 5, "JUNE": 6, "JULY": 7, "AUGUST": 8,
@@ -844,7 +949,6 @@ if uploaded_files:
 
                 cpm = round((day_spends / day_imp) * 1000, 2) if day_imp > 0 else 0.0
                 roas = round(day_ad_sales / day_spends, 2) if day_spends > 0 else 0.0
-                acos = round((day_spends / day_ad_sales) * 100, 2) if day_ad_sales > 0 else 0.0
                 tacos = round((day_spends / ov_sales) * 100, 2) if ov_sales > 0 else 0.0
                 troas = round(ov_sales / day_spends, 2) if day_spends > 0 else 0.0
 
@@ -1743,6 +1847,52 @@ if uploaded_files:
                     return df_source[name]
             return np.nan
 
+        # VLOOKUP helper for Ads Dump missing fields based on Campaign Name
+        def lookup_ads_field(camp_name_val, field_key, default_series):
+            if pd.isna(camp_name_val):
+                return default_series
+            c_str = str(camp_name_val).strip().lower()
+            if c_str in ADS_CAMPAIGN_MASTER:
+                return ADS_CAMPAIGN_MASTER[c_str].get(field_key, default_series)
+            # Fuzzy/partial match
+            for master_k, master_v in ADS_CAMPAIGN_MASTER.items():
+                if master_k in c_str or c_str in master_k:
+                    return master_v.get(field_key, default_series)
+            return default_series
+
+        raw_camp_series = safe_get_col(ads_dump_df, ['Campaign Name', 'Campaign', 'Campaign ID'])
+
+        v_city = []
+        v_ad_type = []
+        v_targeting_type = []
+        v_franchise = []
+        v_category = []
+        v_sub_category = []
+
+        raw_city = safe_get_col(ads_dump_df, ['City', 'Supply City', 'city_name'])
+        raw_ad_type = safe_get_col(ads_dump_df, ['Ad type', 'Ad Type', 'Match Type', 'Ad Type Combined'])
+        raw_target = safe_get_col(ads_dump_df, ['Targeting Type', 'Targeting'])
+        raw_franchise = safe_get_col(ads_dump_df, ['Franchise', 'Brand'])
+        raw_cat = safe_get_col(ads_dump_df, ['Category', 'category'])
+        raw_sub_cat = safe_get_col(ads_dump_df, ['Sub Category', 'Subcategory'])
+
+        for idx, row in ads_dump_df.iterrows():
+            camp_val = raw_camp_series.iloc[idx] if isinstance(raw_camp_series, pd.Series) else np.nan
+            
+            c_fallback = raw_city.iloc[idx] if isinstance(raw_city, pd.Series) and pd.notna(raw_city.iloc[idx]) else "Pan India"
+            ad_fallback = raw_ad_type.iloc[idx] if isinstance(raw_ad_type, pd.Series) and pd.notna(raw_ad_type.iloc[idx]) else "Product Listing"
+            tg_fallback = raw_target.iloc[idx] if isinstance(raw_target, pd.Series) and pd.notna(raw_target.iloc[idx]) else "Keyword"
+            fr_fallback = raw_franchise.iloc[idx] if isinstance(raw_franchise, pd.Series) and pd.notna(raw_franchise.iloc[idx]) else "Staze"
+            cat_fallback = raw_cat.iloc[idx] if isinstance(raw_cat, pd.Series) and pd.notna(raw_cat.iloc[idx]) else "Beauty & Personal Care"
+            sub_fallback = raw_sub_cat.iloc[idx] if isinstance(raw_sub_cat, pd.Series) and pd.notna(raw_sub_cat.iloc[idx]) else "Makeup"
+
+            v_city.append(lookup_ads_field(camp_val, 'City', c_fallback))
+            v_ad_type.append(lookup_ads_field(camp_val, 'Ad type', ad_fallback))
+            v_targeting_type.append(lookup_ads_field(camp_val, 'Targeting Type', tg_fallback))
+            v_franchise.append(lookup_ads_field(camp_val, 'Franchise', fr_fallback))
+            v_category.append(lookup_ads_field(camp_val, 'Category', cat_fallback))
+            v_sub_category.append(lookup_ads_field(camp_val, 'Sub Category', sub_fallback))
+
         ads_export_mapping = {
             'Duration (Month)': ads_dump_df['Duration (Month)'],
             'Duration (Week)': ads_dump_df['Duration (Week)'],
@@ -1750,12 +1900,12 @@ if uploaded_files:
             'date_ist': ads_dump_df['date_ist'],
             'Campaign ID': safe_get_col(ads_dump_df, ['Campaign ID', 'CampaignId']),
             'Campaign Name': safe_get_col(ads_dump_df, ['Campaign Name', 'Campaign']),
-            'City': safe_get_col(ads_dump_df, ['City', 'Supply City', 'city_name']),
-            'Ad type': safe_get_col(ads_dump_df, ['Ad type', 'Ad Type', 'Match Type', 'Ad Type Combined']),
-            'Targeting Type': safe_get_col(ads_dump_df, ['Targeting Type', 'Targeting']),
-            'Franchise': safe_get_col(ads_dump_df, ['Franchise', 'Brand']),
-            'Category': safe_get_col(ads_dump_df, ['Category', 'category']),
-            'Sub Category': safe_get_col(ads_dump_df, ['Sub Category', 'Subcategory']),
+            'City': v_city,
+            'Ad type': v_ad_type,
+            'Targeting Type': v_targeting_type,
+            'Franchise': v_franchise,
+            'Category': v_category,
+            'Sub Category': v_sub_category,
             'Keyword': safe_get_col(ads_dump_df, ['Keyword', 'Search Term', 'Targeting Value']),
             'Most Viewed Position': ads_dump_df['_most_viewed_position'],
             'Match Type': safe_get_col(ads_dump_df, ['Match Type', 'Targeting Type']),
@@ -1789,10 +1939,13 @@ if uploaded_files:
                 s_dump_df['Duration (Week)'] = np.nan
                 s_dump_df['date'] = np.nan
 
+            # Apply VLOOKUP for Franchise column using item_name
+            s_dump_df['Franchise_Mapped'] = s_dump_df['_product_name'].map(OVERALL_FRANCHISE_MASTER).fillna("")
+
             overall_export_mapping = {
                 'item_id': safe_get_col(s_dump_df, ['Item Id', 'item_id', 'SKU ID', 'Product ID']),
                 'item_name': s_dump_df['_product_name'],
-                'Franchise': safe_get_col(s_dump_df, ['Brand Name', 'Franchise', 'Brand']),
+                'Franchise': s_dump_df['Franchise_Mapped'],
                 'manufacturer_id': safe_get_col(s_dump_df, ['manufacturer_id', 'Manufacturer ID']),
                 'manufacturer_name': safe_get_col(s_dump_df, ['manufacturer_name', 'Manufacturer', 'Manufacturer Name']),
                 'city_id': safe_get_col(s_dump_df, ['city_id', 'City ID']),
