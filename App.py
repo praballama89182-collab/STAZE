@@ -1,5 +1,3 @@
-# Let's write out the updated app.py with brand-specific filtering for "staze" (case-insensitive search / multi-character matching)
-# and ensure all requirements are precisely met.
 
 app_code = '''import os
 import io
