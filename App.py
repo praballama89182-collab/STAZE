@@ -10,7 +10,7 @@ import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 
 st.set_page_config(
-    page_title="Blinkit Ad Report & Sales Merger & Analytics",
+    page_title="STAZE Blinkit Summary",
     page_icon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iI2ZkZDA0MyIvPjx0ZXh0IHg9IjI1NiIgeT0iMzIwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2x0IiBmb250LXNpemU9IjIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PGZzcGFuIGZpbGw9IiMwMDAwMDAiPmJsaW5rPC9mc3Bhbj48ZnNwYW4gZmlsbD0iIzAwODEwNyI+aXQ8L2ZzcBhbj48L3RleHQ+PC9zdmc+",
     layout="wide"
 )
@@ -181,11 +181,11 @@ st.markdown("""
             <tspan fill="#000000">blink</tspan><tspan fill="#008107">it</tspan>
         </text>
     </svg>
-    <h1 style="margin: 0; padding: 0; line-height: 1.1;">Blinkit Ad Report & Sales Merger & Analytics</h1>
+    <h1 style="margin: 0; padding: 0; line-height: 1.1;">STAZE Blinkit Summary</h1>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center;'>Upload Ad Campaign reports and overall sales reports (supporting both schema types). System automatically filters ads with <b>'staze'</b> in Campaign Name and sales products with <b>'staze'</b> in Product Name.</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Upload Ad Campaign reports and Overall Sales reports. System automatically filters campaigns and products containing <b>'staze'</b>, computing total sales by summing MRP values directly across all levels.</p>", unsafe_allow_html=True)
 
 def style_and_export_pivot(pivot_df, sheet_name="Comparison"):
     buffer = io.BytesIO()
@@ -316,6 +316,137 @@ def style_and_export_pivot(pivot_df, sheet_name="Comparison"):
     buffer.seek(0)
     return buffer.getvalue()
 
+def convert_all_pivots_to_excel(pivot_dict):
+    buffer = io.BytesIO()
+    wb = openpyxl.Workbook()
+    wb.remove(wb.active)
+
+    top_header_fill = PatternFill(start_color="4A90C2", end_color="4A90C2", fill_type="solid")
+    top_header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    sec_header_fill = PatternFill(start_color="E5F1F9", end_color="E5F1F9", fill_type="solid")
+    sec_header_font = Font(name="Calibri", size=10, bold=True, color="285B7A")
+    index_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+    index_font = Font(name="Calibri", size=10, bold=True, color="000000")
+    total_fill = PatternFill(start_color="E9ECEF", end_color="E9ECEF", fill_type="solid")
+    total_font = Font(name="Calibri", size=10, bold=True, color="000000")
+    data_font = Font(name="Calibri", size=10, color="000000")
+    
+    align_center = Alignment(horizontal="center", vertical="center", wrap_text=False)
+    thin_border = Border(
+        left=Side(style='thin', color='BFBFBF'),
+        right=Side(style='thin', color='BFBFBF'),
+        top=Side(style='thin', color='BFBFBF'),
+        bottom=Side(style='thin', color='BFBFBF')
+    )
+
+    for sheet_name, pivot_df in pivot_dict.items():
+        if pivot_df is not None and not pivot_df.empty:
+            ws = wb.create_sheet(title=sheet_name[:31])
+
+            if isinstance(pivot_df.columns, pd.MultiIndex):
+                metrics = pivot_df.columns.get_level_values(1)
+                entity_title = pivot_df.index.name if pivot_df.index.name else ""
+
+                ws.cell(row=1, column=1, value="").fill = top_header_fill
+                ws.cell(row=1, column=1).border = thin_border
+                
+                current_col = 2
+                for month in pivot_df.columns.get_level_values(0).unique():
+                    sub_cols = [c for c in pivot_df.columns if c[0] == month]
+                    num_sub = len(sub_cols)
+                    if num_sub > 1:
+                        ws.merge_cells(start_row=1, start_column=current_col, end_row=1, end_column=current_col + num_sub - 1)
+                    cell = ws.cell(row=1, column=current_col, value=str(month))
+                    cell.fill = top_header_fill
+                    cell.font = top_header_font
+                    cell.alignment = align_center
+                    
+                    for c in range(current_col, current_col + num_sub):
+                        ws.cell(row=1, column=c).border = thin_border
+                        ws.cell(row=1, column=c).fill = top_header_fill
+                    current_col += num_sub
+
+                cell_a2 = ws.cell(row=2, column=1, value=str(entity_title))
+                cell_a2.fill = index_fill
+                cell_a2.font = index_font
+                cell_a2.alignment = align_center
+                cell_a2.border = thin_border
+
+                for col_idx, metric in enumerate(metrics, start=2):
+                    cell = ws.cell(row=2, column=col_idx, value=str(metric))
+                    cell.fill = sec_header_fill
+                    cell.font = sec_header_font
+                    cell.alignment = align_center
+                    cell.border = thin_border
+
+                for r_idx, (idx_val, row_data) in enumerate(pivot_df.iterrows(), start=3):
+                    is_grand_total = (str(idx_val).strip().lower() in ['grand total', 'aggregate / average'])
+                    
+                    idx_cell = ws.cell(row=r_idx, column=1, value=str(idx_val))
+                    idx_cell.fill = total_fill if is_grand_total else index_fill
+                    idx_cell.font = total_font if is_grand_total else index_font
+                    idx_cell.alignment = align_center
+                    idx_cell.border = thin_border
+
+                    for c_idx, (m_col, val) in enumerate(zip(metrics, row_data), start=2):
+                        val_cell = ws.cell(row=r_idx, column=c_idx)
+                        val_cell.font = total_font if is_grand_total else data_font
+                        if is_grand_total:
+                            val_cell.fill = total_fill
+                        val_cell.alignment = align_center
+                        val_cell.border = thin_border
+
+                        if isinstance(val, (int, float, np.number)):
+                            if str(m_col).upper() in ['ACOS', 'TACOS']:
+                                val_cell.value = val / 100.0 if val > 1 else val
+                                val_cell.number_format = '0.00%'
+                            elif str(m_col).upper() in ['SPENDS', 'AD SALES', 'SALES', 'TOTAL SALES', 'OVERALL SALES']:
+                                val_cell.value = int(round(val))
+                                val_cell.number_format = '#,##0'
+                            else:
+                                val_cell.value = round(val, 2)
+                                val_cell.number_format = '#,##0.00' if not float(val).is_integer() else '#,##0'
+                        else:
+                            val_cell.value = val
+            else:
+                for col_idx, col_name in enumerate(pivot_df.columns, start=1):
+                    cell = ws.cell(row=1, column=col_idx, value=str(col_name))
+                    cell.fill = top_header_fill
+                    cell.font = top_header_font
+                    cell.alignment = align_center
+                    cell.border = thin_border
+
+                for r_idx, (idx_val, row_data) in enumerate(pivot_df.iterrows(), start=2):
+                    is_grand_total = (str(idx_val).strip().lower() in ['grand total', 'aggregate / average'])
+                    for c_idx, (col_name, val) in enumerate(zip(pivot_df.columns, row_data), start=1):
+                        val_cell = ws.cell(row=r_idx, column=c_idx)
+                        val_cell.font = total_font if is_grand_total else data_font
+                        if is_grand_total:
+                            val_cell.fill = total_fill
+                        val_cell.alignment = align_center
+                        val_cell.border = thin_border
+                        
+                        if str(col_name).upper() in ['ACOS', 'TACOS'] and isinstance(val, (int, float, np.number)):
+                            val_cell.value = val / 100.0 if val > 1 else val
+                            val_cell.number_format = '0.00%'
+                        elif str(col_name).upper() in ['SPENDS', 'AD SALES', 'SALES', 'TOTAL SALES', 'OVERALL SALES'] and isinstance(val, (int, float, np.number)):
+                            val_cell.value = int(round(val))
+                            val_cell.number_format = '#,##0'
+                        elif isinstance(val, (int, float, np.number)):
+                            val_cell.value = round(val, 2)
+                            val_cell.number_format = '#,##0.00' if not float(val).is_integer() else '#,##0'
+                        else:
+                            val_cell.value = val
+
+            for col in ws.columns:
+                max_len = max(len(str(cell.value or '')) for cell in col)
+                col_letter = openpyxl.utils.get_column_letter(col[0].column)
+                ws.column_dimensions[col_letter].width = max(max_len + 3, 10)
+
+    wb.save(buffer)
+    buffer.seek(0)
+    return buffer.getvalue()
+
 def convert_dataframe_to_excel_download(df_to_export, sheet_name="Sheet1"):
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
@@ -345,7 +476,7 @@ with col5:
     f5 = st.file_uploader("Upload Ad File 5", type=ad_file_types, key="file5")
     if f5: uploaded_files.append(f5)
 
-st.markdown("### 📥 Upload Sales Reports (Supports both sales file schemas - Up to 5)")
+st.markdown("### 📥 Upload Sales Reports (Supports multiple schemas - Up to 5)")
 scol1, scol2, scol3, scol4, scol5 = st.columns(5)
 uploaded_sales_files = []
 
@@ -387,20 +518,13 @@ master_sales_df = pd.DataFrame()
 if sales_dfs_list:
     raw_sales_concat = pd.concat(sales_dfs_list, ignore_index=True)
     
-    # Understand and unify common fields across different overall sales schemas (e.g. Sales Summary vs CSV dump)
-    # Common Product/Item Name column
     prod_col = next((c for c in ['Product Name', 'Item Name', 'product_name', 'item_name', 'Product'] if c in raw_sales_concat.columns), None)
-    # Common Date column
     date_col = next((c for c in ['Order Date', 'date', 'Date', 'ORDER_DATE', 'timestamp'] if c in raw_sales_concat.columns), None)
-    # Common Gross Amount / Revenue column
-    gross_col = next((c for c in ['Total Gross Bill Amount', 'Gross Amount', 'Total Amount', 'Bill Amount', 'revenue', 'sales_amount'] if c in raw_sales_concat.columns), None)
-    # Common Quantity / Units column
     qty_col = next((c for c in ['Quantity', 'Qty', 'Units', 'qty_sold'] if c in raw_sales_concat.columns), None)
-    # Common City / State columns
+    mrp_col = next((c for c in ['MRP (Rs)', 'mrp', 'MRP', 'Selling Price (Rs)'] if c in raw_sales_concat.columns), None)
     city_col = next((c for c in ['Supply City', 'city_name', 'City'] if c in raw_sales_concat.columns), None)
     state_col = next((c for c in ['Supply State', 'Region', 'State'] if c in raw_sales_concat.columns), None)
 
-    # Standardize to internal columns
     master_sales_df = raw_sales_concat.copy()
     if prod_col:
         master_sales_df['_product_name'] = master_sales_df[prod_col].astype(str)
@@ -420,21 +544,20 @@ if sales_dfs_list:
         master_sales_df['Date_str'] = np.nan
         master_sales_df['Day'] = 1
 
-    if gross_col:
-        master_sales_df['_gross_amt'] = pd.to_numeric(master_sales_df[gross_col].astype(str).str.replace(',', ''), errors='coerce').fillna(0.0)
-    else:
-        # Fallback calculation if Selling Price & Quantity exist
-        sp_col = next((c for c in ['Selling Price (Rs)', 'MRP (Rs)', 'mrp', 'price'] if c in master_sales_df.columns), None)
-        q_col = qty_col if qty_col else None
-        if sp_col and q_col:
-            master_sales_df['_gross_amt'] = pd.to_numeric(master_sales_df[sp_col], errors='coerce').fillna(0.0) * pd.to_numeric(master_sales_df[q_col], errors='coerce').fillna(1.0)
-        else:
-            master_sales_df['_gross_amt'] = 0.0
-
     if qty_col:
-        master_sales_df['_qty'] = pd.to_numeric(master_sales_df[qty_col], errors='coerce').fillna(1.0)
+        master_sales_df['_qty'] = pd.to_numeric(master_sales_df[qty_col].astype(str).str.replace(',', ''), errors='coerce').fillna(1.0)
     else:
         master_sales_df['_qty'] = 1.0
+
+    # Total sales calculation: Just add all MRP (no multiplication with quantity across campaign, product, and other levels)
+    if mrp_col:
+        master_sales_df['_gross_amt'] = pd.to_numeric(master_sales_df[mrp_col].astype(str).str.replace(',', ''), errors='coerce').fillna(0.0)
+    else:
+        gross_col = next((c for c in ['Total Gross Bill Amount', 'Gross Amount', 'Total Amount', 'Bill Amount', 'revenue', 'sales_amount'] if c in master_sales_df.columns), None)
+        if gross_col:
+            master_sales_df['_gross_amt'] = pd.to_numeric(master_sales_df[gross_col].astype(str).str.replace(',', ''), errors='coerce').fillna(0.0)
+        else:
+            master_sales_df['_gross_amt'] = 0.0
 
     if city_col:
         master_sales_df['Supply City'] = master_sales_df[city_col]
@@ -545,7 +668,7 @@ if uploaded_files:
     if consolidated_dfs:
         final_df = pd.concat(consolidated_dfs, ignore_index=True)
         
-        # Filter ads campaign name strictly for those with "staze" mentioned in the campaign name
+        # Filter campaigns strictly for those with "staze" mentioned in the campaign name
         camp_col_candidates = [c for c in ['Campaign Name', 'Campaign', 'CampaignId', 'Campaign ID'] if c in final_df.columns]
         if camp_col_candidates:
             c_col = camp_col_candidates[0]
@@ -749,8 +872,6 @@ if uploaded_files:
             total_atc_sum = res_df['ATC'].sum()
             total_imp_sum = res_df['Impressions'].sum()
             avg_cpm = round(res_df['CPM'].mean(), 2)
-            avg_roas = round(total_ad_sales_sum / total_spends_sum, 2) if total_spends_sum > 0 else 0.0
-            avg_troas = round(total_sales_sum / total_spends_sum, 2) if total_spends_sum > 0 else 0.0
             avg_tacos = round((total_spends_sum / total_sales_sum) * 100, 2) if total_sales_sum > 0 else 0.0
             avg_acos = round((total_spends_sum / total_ad_sales_sum) * 100, 2) if total_ad_sales_sum > 0 else 0.0
 
@@ -931,86 +1052,6 @@ if uploaded_files:
 
             return res_df
 
-        def create_daily_tracker_table(selected_month):
-            if master_sales_df.empty or '_sales_dt' not in master_sales_df.columns:
-                return pd.DataFrame()
-
-            m_df = master_sales_df[master_sales_df['Month'] == selected_month].copy()
-            if m_df.empty:
-                return pd.DataFrame()
-
-            ad_df = final_df[final_df['Month'] == selected_month].copy() if 'Month' in final_df.columns else pd.DataFrame()
-
-            rows = []
-            for day_i in range(1, 32):
-                day_sales = m_df[m_df['Day'] == day_i]
-                ov_sales = round(day_sales['_gross_amt'].sum(), 2)
-                ov_orders = len(day_sales)
-                
-                day_spends = 0.0
-                day_imp = 0.0
-                day_atc = 0.0
-                day_ad_sales = 0.0
-                day_ad_orders = 0.0
-
-                if not ad_df.empty and 'Date' in ad_df.columns:
-                    matched_ad = ad_df[ad_df['_date_dt'].dt.day == day_i]
-                    day_spends = round(matched_ad['_budget_consumed'].sum(), 2)
-                    day_imp = matched_ad['_impressions'].sum()
-                    day_atc = matched_ad['_atc'].sum()
-                    day_ad_sales = round(matched_ad['_sales'].sum(), 2)
-                    day_ad_orders = int(matched_ad['_orders'].sum())
-
-                cpm = round((day_spends / day_imp) * 1000, 2) if day_imp > 0 else 0.0
-                roas = round(day_ad_sales / day_spends, 2) if day_spends > 0 else 0.0
-                tacos = round((day_spends / ov_sales) * 100, 2) if ov_sales > 0 else 0.0
-                troas = round(ov_sales / day_spends, 2) if day_spends > 0 else 0.0
-
-                rows.append({
-                    'Date (Day)': f"Day {day_i}",
-                    'CPM': cpm,
-                    'Impressions': int(day_imp),
-                    'Spends': day_spends,
-                    'Ad Sales': day_ad_sales,
-                    'Total Sales': ov_sales,
-                    'Ad Orders': day_ad_orders,
-                    'Total Orders': ov_orders,
-                    'ATC': int(day_atc),
-                    'TACOS': f"{tacos:.2f}%",
-                    'Ad ROAS': roas,
-                    'TROAS': troas
-                })
-
-            res_df = pd.DataFrame(rows)
-            total_sales_sum = res_df['Total Sales'].sum()
-            total_orders_sum = res_df['Total Orders'].sum()
-            total_spends_sum = res_df['Spends'].sum()
-            total_ad_sales_sum = res_df['Ad Sales'].sum()
-            total_ad_orders_sum = res_df['Ad Orders'].sum()
-            total_atc_sum = res_df['ATC'].sum()
-            total_imp_sum = res_df['Impressions'].sum()
-            avg_cpm = round(res_df['CPM'].mean(), 2)
-            avg_roas = round(total_ad_sales_sum / total_spends_sum, 2) if total_spends_sum > 0 else 0.0
-            avg_tacos = round((total_spends_sum / total_sales_sum) * 100, 2) if total_sales_sum > 0 else 0.0
-            avg_troas = round(total_sales_sum / total_spends_sum, 2) if total_spends_sum > 0 else 0.0
-
-            summary_row = pd.DataFrame([{
-                'Date (Day)': 'Aggregate / Average',
-                'CPM': avg_cpm,
-                'Impressions': total_imp_sum,
-                'Spends': total_spends_sum,
-                'Ad Sales': total_ad_sales_sum,
-                'Total Sales': total_sales_sum,
-                'Ad Orders': total_ad_orders_sum,
-                'Total Orders': total_orders_sum,
-                'ATC': int(total_atc_sum),
-                'TACOS': f"{avg_tacos:.2f}%",
-                'Ad ROAS': avg_roas,
-                'TROAS': avg_troas
-            }])
-            res_df = pd.concat([res_df, summary_row], ignore_index=True)
-            return res_df
-
         def _format_dashboard_value(value, column_name=""):
             if pd.isna(value):
                 return value
@@ -1105,7 +1146,7 @@ if uploaded_files:
         ])
 
         with main_tab1:
-            st.caption("Inspect individual files or use flexible campaign and product substring search (e.g. typing 'Sta' reveals all matching campaigns/products).")
+            st.caption("Inspect individual files or use flexible substring search (e.g. typing 'Sta' reveals all matching campaigns and products).")
             
             raw_sub_tab1, raw_sub_tab2, raw_sub_tab3 = st.tabs([
                 "📂 Standard File & Sheet Inspector",
@@ -1133,7 +1174,6 @@ if uploaded_files:
                 if campaign_col_candidates:
                     camp_col_name = campaign_col_candidates[0]
                     
-                    # Flexible text search query for campaign name supporting syllables like 'Sta'
                     campaign_search_input = st.text_input("Type Campaign Name Syllable / Keyword (e.g., 'Sta', 'staze'):", "Sta", key="ads_raw_search_input")
                     
                     all_campaigns_list = sorted([str(x) for x in final_df[camp_col_name].dropna().unique()])
@@ -1188,7 +1228,7 @@ if uploaded_files:
                     product_col_candidates = [c for c in ['Product Name', 'Item Name', 'product_name', 'item_name', 'Product'] if c in master_sales_df.columns]
                     if product_col_candidates:
                         prod_col_name = product_col_candidates[0]
-                        product_syllable_input = st.text_input("Type Product Name Syllable / Keyword (e.g., 'Sta', 'staze', 'oil'):", "Sta", key="sales_raw_syllable_input")
+                        product_syllable_input = st.text_input("Type Product Name Syllable / Keyword (e.g., 'Sta', 'staze'):", "Sta", key="sales_raw_syllable_input")
 
                         sales_filtered_raw = master_sales_df.copy()
                         if product_syllable_input.strip():
@@ -1498,7 +1538,7 @@ if uploaded_files:
 
                 prod_col_name = next((c for c in ['Product Name', 'Item Name', 'product_name', 'item_name', 'Product'] if c in city_filtered_sales.columns), None)
                 qty_col_name = next((c for c in ['Quantity', 'Qty', 'Units', '_qty'] if c in city_filtered_sales.columns), None)
-                amt_col_name = next((c for c in ['Total Gross Bill Amount', 'Gross Amount', '_gross_amt', 'Selling Price (Rs)'] if c in city_filtered_sales.columns), None)
+                amt_col_name = next((c for c in ['_gross_amt', 'MRP (Rs)', 'mrp', 'MRP'] if c in city_filtered_sales.columns), None)
 
                 if prod_col_name and qty_col_name and amt_col_name:
                     prod_agg = city_filtered_sales.groupby(prod_col_name).agg(
@@ -1706,7 +1746,7 @@ if uploaded_files:
         st.download_button(
             label="📥 Download Complete Excel Workbook (Initial Dumps + Raw Tabs)",
             data=buffer_multi,
-            file_name="Blinkit_Consolidated_Master_Report.xlsx",
+            file_name="STAZE_Blinkit_Consolidated_Master_Report.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="primary"
         )
