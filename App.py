@@ -1,5 +1,4 @@
-
-app_code = '''import os
+import os
 import io
 import pandas as pd
 import numpy as np
@@ -11,7 +10,7 @@ import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 
 st.set_page_config(
-    page_title="Blinkit Ad Report & Sales Merger & Analytics (Staze Edition)",
+    page_title="Blinkit Ad Report & Sales Merger & Analytics",
     page_icon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iI2ZkZDA0MyIvPjx0ZXh0IHg9IjI1NiIgeT0iMzIwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2x0IiBmb250LXNpemU9IjIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PGZzcGFuIGZpbGw9IiMwMDAwMDAiPmJsaW5rPC9mc3Bhbj48ZnNwYW4gZmlsbD0iIzAwODEwNyI+aXQ8L2ZzcBhbj48L3RleHQ+PC9zdmc+",
     layout="wide"
 )
@@ -182,11 +181,11 @@ st.markdown("""
             <tspan fill="#000000">blink</tspan><tspan fill="#008107">it</tspan>
         </text>
     </svg>
-    <h1 style="margin: 0; padding: 0; line-height: 1.1;">Blinkit Ad Report & Sales Merger & Analytics (Staze Brand Edition)</h1>
+    <h1 style="margin: 0; padding: 0; line-height: 1.1;">Blinkit Ad Report & Sales Merger & Analytics</h1>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center;'>Brand-specific analytics filtering for <b>Staze</b> campaigns and products across uploaded Ad Campaign spreadsheets and Sales Reports.</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Upload up to 5 monthly Ad Campaign spreadsheets/CSV files and up to 5 Sales Reports (.csv, .xlsx, .xls) to analyze TACOS, TROAS, Overall Sales, Spends, and multi-metric trends without compression loss.</p>", unsafe_allow_html=True)
 
 def style_and_export_pivot(pivot_df, sheet_name="Comparison"):
     buffer = io.BytesIO()
@@ -317,205 +316,75 @@ def style_and_export_pivot(pivot_df, sheet_name="Comparison"):
     buffer.seek(0)
     return buffer.getvalue()
 
-def convert_all_pivots_to_excel(pivot_dict):
+def convert_dataframe_to_excel_download(df_to_export, sheet_name="Sheet1"):
     buffer = io.BytesIO()
-    wb = openpyxl.Workbook()
-    wb.remove(wb.active)
-
-    top_header_fill = PatternFill(start_color="4A90C2", end_color="4A90C2", fill_type="solid")
-    top_header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
-    sec_header_fill = PatternFill(start_color="E5F1F9", end_color="E5F1F9", fill_type="solid")
-    sec_header_font = Font(name="Calibri", size=10, bold=True, color="285B7A")
-    index_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
-    index_font = Font(name="Calibri", size=10, bold=True, color="000000")
-    total_fill = PatternFill(start_color="E9ECEF", end_color="E9ECEF", fill_type="solid")
-    total_font = Font(name="Calibri", size=10, bold=True, color="000000")
-    data_font = Font(name="Calibri", size=10, color="000000")
-    
-    align_center = Alignment(horizontal="center", vertical="center", wrap_text=False)
-    thin_border = Border(
-        left=Side(style='thin', color='BFBFBF'),
-        right=Side(style='thin', color='BFBFBF'),
-        top=Side(style='thin', color='BFBFBF'),
-        bottom=Side(style='thin', color='BFBFBF')
-    )
-
-    for sheet_name, pivot_df in pivot_dict.items():
-        if pivot_df is not None and not pivot_df.empty:
-            ws = wb.create_sheet(title=sheet_name[:31])
-
-            if isinstance(pivot_df.columns, pd.MultiIndex):
-                metrics = pivot_df.columns.get_level_values(1)
-                entity_title = pivot_df.index.name if pivot_df.index.name else ""
-
-                ws.cell(row=1, column=1, value="").fill = top_header_fill
-                ws.cell(row=1, column=1).border = thin_border
-                
-                current_col = 2
-                for month in pivot_df.columns.get_level_values(0).unique():
-                    sub_cols = [c for c in pivot_df.columns if c[0] == month]
-                    num_sub = len(sub_cols)
-                    if num_sub > 1:
-                        ws.merge_cells(start_row=1, start_column=current_col, end_row=1, end_column=current_col + num_sub - 1)
-                    cell = ws.cell(row=1, column=current_col, value=str(month))
-                    cell.fill = top_header_fill
-                    cell.font = top_header_font
-                    cell.alignment = align_center
-                    
-                    for c in range(current_col, current_col + num_sub):
-                        ws.cell(row=1, column=c).border = thin_border
-                        ws.cell(row=1, column=c).fill = top_header_fill
-                    current_col += num_sub
-
-                cell_a2 = ws.cell(row=2, column=1, value=str(entity_title))
-                cell_a2.fill = index_fill
-                cell_a2.font = index_font
-                cell_a2.alignment = align_center
-                cell_a2.border = thin_border
-
-                for col_idx, metric in enumerate(metrics, start=2):
-                    cell = ws.cell(row=2, column=col_idx, value=str(metric))
-                    cell.fill = sec_header_fill
-                    cell.font = sec_header_font
-                    cell.alignment = align_center
-                    cell.border = thin_border
-
-                for r_idx, (idx_val, row_data) in enumerate(pivot_df.iterrows(), start=3):
-                    is_grand_total = (str(idx_val).strip().lower() in ['grand total', 'aggregate / average'])
-                    
-                    idx_cell = ws.cell(row=r_idx, column=1, value=str(idx_val))
-                    idx_cell.fill = total_fill if is_grand_total else index_fill
-                    idx_cell.font = total_font if is_grand_total else index_font
-                    idx_cell.alignment = align_center
-                    idx_cell.border = thin_border
-
-                    for c_idx, (m_col, val) in enumerate(zip(metrics, row_data), start=2):
-                        val_cell = ws.cell(row=r_idx, column=c_idx)
-                        val_cell.font = total_font if is_grand_total else data_font
-                        if is_grand_total:
-                            val_cell.fill = total_fill
-                        val_cell.alignment = align_center
-                        val_cell.border = thin_border
-
-                        if isinstance(val, (int, float, np.number)):
-                            if str(m_col).upper() in ['ACOS', 'TACOS']:
-                                val_cell.value = val / 100.0 if val > 1 else val
-                                val_cell.number_format = '0.00%'
-                            elif str(m_col).upper() in ['SPENDS', 'AD SALES', 'SALES', 'TOTAL SALES', 'OVERALL SALES']:
-                                val_cell.value = int(round(val))
-                                val_cell.number_format = '#,##0'
-                            else:
-                                val_cell.value = round(val, 2)
-                                val_cell.number_format = '#,##0.00' if not float(val).is_integer() else '#,##0'
-                        else:
-                            val_cell.value = val
-            else:
-                for col_idx, col_name in enumerate(pivot_df.columns, start=1):
-                    cell = ws.cell(row=1, column=col_idx, value=str(col_name))
-                    cell.fill = top_header_fill
-                    cell.font = top_header_font
-                    cell.alignment = align_center
-                    cell.border = thin_border
-
-                for r_idx, (idx_val, row_data) in enumerate(pivot_df.iterrows(), start=2):
-                    is_grand_total = (str(idx_val).strip().lower() in ['grand total', 'aggregate / average'])
-                    for c_idx, (col_name, val) in enumerate(zip(pivot_df.columns, row_data), start=1):
-                        val_cell = ws.cell(row=r_idx, column=c_idx)
-                        val_cell.font = total_font if is_grand_total else data_font
-                        if is_grand_total:
-                            val_cell.fill = total_fill
-                        val_cell.alignment = align_center
-                        val_cell.border = thin_border
-                        
-                        if str(col_name).upper() in ['ACOS', 'TACOS'] and isinstance(val, (int, float, np.number)):
-                            val_cell.value = val / 100.0 if val > 1 else val
-                            val_cell.number_format = '0.00%'
-                        elif str(col_name).upper() in ['SPENDS', 'AD SALES', 'SALES', 'TOTAL SALES', 'OVERALL SALES'] and isinstance(val, (int, float, np.number)):
-                            val_cell.value = int(round(val))
-                            val_cell.number_format = '#,##0'
-                        elif isinstance(val, (int, float, np.number)):
-                            val_cell.value = round(val, 2)
-                            val_cell.number_format = '#,##0.00' if not float(val).is_integer() else '#,##0'
-                        else:
-                            val_cell.value = val
-
-            for col in ws.columns:
-                max_len = max(len(str(cell.value or '')) for cell in col)
-                col_letter = openpyxl.utils.get_column_letter(col[0].column)
-                ws.column_dimensions[col_letter].width = max(max_len + 3, 10)
-
-    wb.save(buffer)
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        df_to_export.to_excel(writer, sheet_name=sheet_name[:31], index=False)
     buffer.seek(0)
     return buffer.getvalue()
-
-# Sidebar / Top Brand Filter Configuration for Staze
-st.sidebar.markdown("### 🏷️ Staze Brand Filter Settings")
-ad_filter_query = st.sidebar.text_input("Ad Campaign Filter Keyword", value="staze", help="Only campaigns matching this keyword (e.g., 'staze' or 'sta') will be processed.")
-sales_filter_query = st.sidebar.text_input("Sales Product Filter Keyword", value="staze", help="Only products/items matching this keyword will be processed.")
 
 st.markdown("### 📤 Upload Ad Campaign Reports (Up to 5)")
 col1, col2, col3, col4, col5 = st.columns(5)
 uploaded_files = []
 
+ad_file_types = ["csv", "xlsx", "xls", "xlsb", "xlsm"]
+
 with col1:
-    f1 = st.file_uploader("Upload Ad File 1", type=["xlsx", "xls", "xlsb", "xlsm"], key="file1")
+    f1 = st.file_uploader("Upload Ad File 1", type=ad_file_types, key="file1")
     if f1: uploaded_files.append(f1)
 with col2:
-    f2 = st.file_uploader("Upload Ad File 2", type=["xlsx", "xls", "xlsb", "xlsm"], key="file2")
+    f2 = st.file_uploader("Upload Ad File 2", type=ad_file_types, key="file2")
     if f2: uploaded_files.append(f2)
 with col3:
-    f3 = st.file_uploader("Upload Ad File 3", type=["xlsx", "xls", "xlsb", "xlsm"], key="file3")
+    f3 = st.file_uploader("Upload Ad File 3", type=ad_file_types, key="file3")
     if f3: uploaded_files.append(f3)
 with col4:
-    f4 = st.file_uploader("Upload Ad File 4", type=["xlsx", "xls", "xlsb", "xlsm"], key="file4")
+    f4 = st.file_uploader("Upload Ad File 4", type=ad_file_types, key="file4")
     if f4: uploaded_files.append(f4)
 with col5:
-    f5 = st.file_uploader("Upload Ad File 5", type=["xlsx", "xls", "xlsb", "xlsm"], key="file5")
+    f5 = st.file_uploader("Upload Ad File 5", type=ad_file_types, key="file5")
     if f5: uploaded_files.append(f5)
 
 st.markdown("### 📥 Upload Sales Reports (Up to 5)")
 scol1, scol2, scol3, scol4, scol5 = st.columns(5)
 uploaded_sales_files = []
 
+sales_file_types = ["csv", "xlsx", "xls", "xlsb", "xlsm"]
+
 with scol1:
-    s1 = st.file_uploader("Upload Sales File 1", type=["xlsx", "xls"], key="sales1")
+    s1 = st.file_uploader("Upload Sales File 1", type=sales_file_types, key="sales1")
     if s1: uploaded_sales_files.append(s1)
 with scol2:
-    s2 = st.file_uploader("Upload Sales File 2", type=["xlsx", "xls"], key="sales2")
+    s2 = st.file_uploader("Upload Sales File 2", type=sales_file_types, key="sales2")
     if s2: uploaded_sales_files.append(s2)
 with scol3:
-    s3 = st.file_uploader("Upload Sales File 3", type=["xlsx", "xls"], key="sales3")
+    s3 = st.file_uploader("Upload Sales File 3", type=sales_file_types, key="sales3")
     if s3: uploaded_sales_files.append(s3)
 with scol4:
-    s4 = st.file_uploader("Upload Sales File 4", type=["xlsx", "xls"], key="sales4")
+    s4 = st.file_uploader("Upload Sales File 4", type=sales_file_types, key="sales4")
     if s4: uploaded_sales_files.append(s4)
 with scol5:
-    s5 = st.file_uploader("Upload Sales File 5", type=["xlsx", "xls"], key="sales5")
+    s5 = st.file_uploader("Upload Sales File 5", type=sales_file_types, key="sales5")
     if s5: uploaded_sales_files.append(s5)
 
 sales_dfs_list = []
 if uploaded_sales_files:
     for s_file in uploaded_sales_files:
         try:
-            s_xls = pd.ExcelFile(s_file)
-            for s_sheet in s_xls.sheet_names:
-                sdf = pd.read_excel(s_xls, sheet_name=s_sheet)
+            if s_file.name.lower().endswith('.csv'):
+                sdf = pd.read_csv(s_file, low_memory=False)
                 sales_dfs_list.append(sdf)
+            else:
+                s_xls = pd.ExcelFile(s_file)
+                for s_sheet in s_xls.sheet_names:
+                    sdf = pd.read_excel(s_xls, sheet_name=s_sheet)
+                    sales_dfs_list.append(sdf)
         except Exception as e:
             st.error(f"Error reading sales file {s_file.name}: {str(e)}")
 
 master_sales_df = pd.DataFrame()
 if sales_dfs_list:
-    raw_master_sales = pd.concat(sales_dfs_list, ignore_index=True)
-    
-    # Filter sales by Product / Item Name matching the brand keyword (Staze)
-    item_col = next((c for c in ['item_name', 'Item Name', 'Product Name', 'Product'] if c in raw_master_sales.columns), None)
-    if item_col and sales_filter_query:
-        mask = raw_master_sales[item_col].astype(str).str.contains(sales_filter_query, case=False, na=False)
-        master_sales_df = raw_master_sales[mask].copy()
-    else:
-        master_sales_df = raw_master_sales.copy()
-
+    master_sales_df = pd.concat(sales_dfs_list, ignore_index=True)
     date_cand = next((c for c in ['Order Date', 'date', 'Date', 'ORDER_DATE'] if c in master_sales_df.columns), None)
     gross_cand = next((c for c in ['Total Gross Bill Amount', 'Gross Amount', 'Total Amount', 'Bill Amount'] if c in master_sales_df.columns), None)
     qty_cand = next((c for c in ['Quantity', 'Qty', 'Units'] if c in master_sales_df.columns), None)
@@ -540,45 +409,35 @@ if uploaded_files:
     consolidated_raw_tabs = {}
 
     for uploaded_file in uploaded_files:
+        file_name_lower = uploaded_file.name.lower()
         fallback_month_name = os.path.splitext(uploaded_file.name)[0].upper()
         raw_files_dict[uploaded_file.name] = {}
         
         try:
-            xls = pd.ExcelFile(uploaded_file)
-            sheets_to_process = xls.sheet_names[1:] if len(xls.sheet_names) > 1 else xls.sheet_names
-            valid_sheet_names = [s for s in sheets_to_process if s.strip().lower() not in ['consolidated_master', 'summary', 'overall', 'ads dump', 'overall dump', 'overall raw']]
-
-            for sheet_name in valid_sheet_names:
-                df = pd.read_excel(xls, sheet_name=sheet_name)
+            if file_name_lower.endswith('.csv'):
+                df = pd.read_csv(uploaded_file, low_memory=False)
+                sheet_name = "Sheet1"
+                raw_files_dict[uploaded_file.name][sheet_name] = df.copy()
                 
-                # Filter campaigns by Ad Campaign filter keyword (Staze)
-                camp_col = next((c for c in ['Campaign Name', 'Campaign', 'CampaignId'] if c in df.columns), None)
-                if camp_col and ad_filter_query:
-                    df_filtered = df[df[camp_col].astype(str).str.contains(ad_filter_query, case=False, na=False)].copy()
-                else:
-                    df_filtered = df.copy()
-
-                raw_files_dict[uploaded_file.name][sheet_name] = df_filtered.copy()
-                
-                date_col = next((c for c in ['Date', 'date', 'Day', 'DATE', 'date_ist', 'timestamp'] if c in df_filtered.columns), None)
+                date_col = next((c for c in ['Date', 'date', 'Day', 'DATE', 'date_ist', 'timestamp'] if c in df.columns), None)
 
                 if date_col:
-                    dt_series = pd.to_datetime(df_filtered[date_col], format='mixed', dayfirst=False, errors='coerce')
+                    dt_series = pd.to_datetime(df[date_col], format='mixed', dayfirst=False, errors='coerce')
                     month_series = dt_series.dt.strftime('%B').str.upper()
-                    df_filtered['Month'] = month_series.fillna(fallback_month_name)
-                    df_filtered['_date_dt'] = dt_series
-                    df_filtered['Date'] = dt_series.dt.strftime('%Y-%m-%d')
+                    df['Month'] = month_series.fillna(fallback_month_name)
+                    df['_date_dt'] = dt_series
+                    df['Date'] = dt_series.dt.strftime('%Y-%m-%d')
                 else:
-                    df_filtered['Month'] = fallback_month_name
-                    df_filtered['_date_dt'] = pd.NaT
-                    df_filtered['Date'] = np.nan
+                    df['Month'] = fallback_month_name
+                    df['_date_dt'] = pd.NaT
+                    df['Date'] = np.nan
 
-                df_raw = df_filtered.copy()
+                df_raw = df.copy()
                 if sheet_name not in consolidated_raw_tabs:
                     consolidated_raw_tabs[sheet_name] = []
                 consolidated_raw_tabs[sheet_name].append(df_raw)
                 
-                df_consolidated = df_filtered.copy()
+                df_consolidated = df.copy()
                 if 'Month' in df_consolidated.columns:
                     col_month = df_consolidated.pop('Month')
                     df_consolidated.insert(0, 'Month', col_month)
@@ -594,6 +453,49 @@ if uploaded_files:
                     df_consolidated.insert(2, 'Date', np.nan)
 
                 consolidated_dfs.append(df_consolidated)
+            else:
+                xls = pd.ExcelFile(uploaded_file)
+                sheets_to_process = xls.sheet_names[1:] if len(xls.sheet_names) > 1 else xls.sheet_names
+                valid_sheet_names = [s for s in sheets_to_process if s.strip().lower() not in ['consolidated_master', 'summary', 'overall', 'ads dump', 'overall dump']]
+
+                for sheet_name in valid_sheet_names:
+                    df = pd.read_excel(xls, sheet_name=sheet_name)
+                    raw_files_dict[uploaded_file.name][sheet_name] = df.copy()
+                    
+                    date_col = next((c for c in ['Date', 'date', 'Day', 'DATE', 'date_ist', 'timestamp'] if c in df.columns), None)
+
+                    if date_col:
+                        dt_series = pd.to_datetime(df[date_col], format='mixed', dayfirst=False, errors='coerce')
+                        month_series = dt_series.dt.strftime('%B').str.upper()
+                        df['Month'] = month_series.fillna(fallback_month_name)
+                        df['_date_dt'] = dt_series
+                        df['Date'] = dt_series.dt.strftime('%Y-%m-%d')
+                    else:
+                        df['Month'] = fallback_month_name
+                        df['_date_dt'] = pd.NaT
+                        df['Date'] = np.nan
+
+                    df_raw = df.copy()
+                    if sheet_name not in consolidated_raw_tabs:
+                        consolidated_raw_tabs[sheet_name] = []
+                    consolidated_raw_tabs[sheet_name].append(df_raw)
+                    
+                    df_consolidated = df.copy()
+                    if 'Month' in df_consolidated.columns:
+                        col_month = df_consolidated.pop('Month')
+                        df_consolidated.insert(0, 'Month', col_month)
+                    else:
+                        df_consolidated.insert(0, 'Month', fallback_month_name)
+                        
+                    df_consolidated.insert(1, 'Tab Name', sheet_name)
+                    
+                    if 'Date' in df_consolidated.columns:
+                        col_date = df_consolidated.pop('Date')
+                        df_consolidated.insert(2, 'Date', col_date)
+                    else:
+                        df_consolidated.insert(2, 'Date', np.nan)
+
+                    consolidated_dfs.append(df_consolidated)
         except Exception as e:
             st.error(f"Error processing {uploaded_file.name}: {str(e)}")
 
@@ -670,8 +572,6 @@ if uploaded_files:
             final_df['Ad Type Combined'] = final_df[match_col].fillna("Other").astype(str).str.title()
         else:
             final_df['Ad Type Combined'] = "Other"
-
-        date_col = next((c for c in ['Date', 'date', 'Day', 'DATE', 'date_ist', 'timestamp'] if c in final_df.columns), None)
 
         MONTH_ORDER_ASC = {
             "JANUARY": 1, "FEBRUARY": 2, "MARCH": 3, "APRIL": 4,
@@ -1119,7 +1019,7 @@ if uploaded_files:
 
         has_sales_data = not master_sales_df.empty and '_sales_dt' in master_sales_df.columns
 
-        st.markdown("### 📈 Staze Brand Performance Dashboard")
+        st.markdown("### 📈 Overall Campaign Performance Dashboard")
         
         if has_sales_data:
             f_sales_df = master_sales_df if selected_month == "All Months" else master_sales_df[master_sales_df['Month'] == selected_month]
@@ -1129,18 +1029,18 @@ if uploaded_files:
             overall_troas = round(total_overall_sales / total_ad_spends, 2) if total_ad_spends > 0 else 0.0
 
             dcol1, dcol2, dcol3 = st.columns(3)
-            with dcol1: st.metric("Staze Ad Sales", f"₹{int(round(total_ad_sales)):,}")
-            with dcol2: st.metric("Staze Total Sales", f"₹{int(round(total_overall_sales)):,}")
+            with dcol1: st.metric("Ad Sales", f"₹{int(round(total_ad_sales)):,}")
+            with dcol2: st.metric("Total Sales", f"₹{int(round(total_overall_sales)):,}")
             with dcol3: st.metric("Ad ROAS", f"{overall_ad_roas:.2f}x")
 
             dcol4, dcol5, dcol6 = st.columns(3)
             with dcol4: st.metric("TACOS", f"{overall_tacos:.2f}%")
             with dcol5: st.metric("TROAS", f"{overall_troas:.2f}")
-            with dcol6: st.metric("Staze Spends", f"₹{int(round(total_ad_spends)):,}")
+            with dcol6: st.metric("Spends", f"₹{int(round(total_ad_spends)):,}")
         else:
             dcol1, dcol2, dcol3 = st.columns(3)
-            with dcol1: st.metric("Staze Ad Sales", f"₹{int(round(total_ad_sales)):,}")
-            with dcol2: st.metric("Staze Spends", f"₹{int(round(total_ad_spends)):,}")
+            with dcol1: st.metric("Ad Sales", f"₹{int(round(total_ad_sales)):,}")
+            with dcol2: st.metric("Spends", f"₹{int(round(total_ad_spends)):,}")
             with dcol3: st.metric("Ad ROAS", f"{overall_ad_roas:.2f}x")
 
         st.divider()
@@ -1156,22 +1056,124 @@ if uploaded_files:
         ])
 
         with main_tab1:
-            st.caption("Inspect individual sheets tab-by-tab for Staze campaigns.")
-            selected_file_name = st.selectbox("Select Uploaded File to Preview:", list(raw_files_dict.keys()), key="raw_file_sel")
-            if selected_file_name:
-                sheets = raw_files_dict[selected_file_name]
-                selected_sheet = st.selectbox("Select Sheet Tab:", list(sheets.keys()), key="raw_sheet_sel")
-                if selected_sheet:
-                    raw_styled = format_dashboard_dataframe(sheets[selected_sheet].head(100)).style.set_properties(**{
+            st.caption("Inspect individual sheets/files tab-by-tab or use dedicated Ads & Sales Raw filters below.")
+            
+            raw_sub_tab1, raw_sub_tab2, raw_sub_tab3 = st.tabs([
+                "📂 Standard File & Sheet Inspector",
+                "🎯 Ads Raw Filter & Overview",
+                "📦 Overall Sales Raw Filter & Overview"
+            ])
+
+            with raw_sub_tab1:
+                selected_file_name = st.selectbox("Select Uploaded File to Preview:", list(raw_files_dict.keys()), key="raw_file_sel")
+                if selected_file_name:
+                    sheets = raw_files_dict[selected_file_name]
+                    selected_sheet = st.selectbox("Select Sheet Tab:", list(sheets.keys()), key="raw_sheet_sel")
+                    if selected_sheet:
+                        raw_styled = format_dashboard_dataframe(sheets[selected_sheet].head(100)).style.set_properties(**{
+                            'text-align': 'center', 'vertical-align': 'middle'
+                        }).set_table_styles([
+                            {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle')]},
+                            {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle')]}
+                        ])
+                        st.dataframe(raw_styled, use_container_width=True, hide_index=True)
+
+            with raw_sub_tab2:
+                st.markdown("#### 🎯 Ads Campaign Raw Data Filter & Overview")
+                campaign_col_candidates = [c for c in ['Campaign Name', 'Campaign', 'CampaignId', 'Campaign ID'] if c in final_df.columns]
+                if campaign_col_candidates:
+                    camp_col_name = campaign_col_candidates[0]
+                    unique_campaigns = sorted([str(x) for x in final_df[camp_col_name].dropna().unique()])
+                    selected_campaign_filter = st.selectbox("Select Campaign Name for Ads Raw View & Export:", ["All Campaigns"] + unique_campaigns, key="ads_raw_campaign_filter")
+
+                    ads_filtered_raw = final_df.copy()
+                    if selected_campaign_filter != "All Campaigns":
+                        ads_filtered_raw = ads_filtered_raw[ads_filtered_raw[camp_col_name].astype(str) == selected_campaign_filter]
+
+                    f_ad_sales = round(ads_filtered_raw['_sales'].sum(), 2)
+                    f_ad_spends = round(ads_filtered_raw['_budget_consumed'].sum(), 2)
+                    f_ad_imp = int(ads_filtered_raw['_impressions'].sum())
+                    f_ad_orders = int(ads_filtered_raw['_orders'].sum())
+                    f_ad_roas = round(f_ad_sales / f_ad_spends, 2) if f_ad_spends > 0 else 0.0
+
+                    acol1, acol2, acol3, acol4 = st.columns(4)
+                    with acol1: st.metric("Filtered Ad Sales", f"₹{int(round(f_ad_sales)):,}")
+                    with acol2: st.metric("Filtered Spends", f"₹{int(round(f_ad_spends)):,}")
+                    with acol3: st.metric("Filtered Ad ROAS", f"{f_ad_roas:.2f}x")
+                    with acol4: st.metric("Filtered Impressions", f"{f_ad_imp:,}")
+
+                    st.markdown("##### Filtered Ads Raw Data Preview:")
+                    preview_ads_raw = ads_filtered_raw.drop(columns=[c for c in ads_filtered_raw.columns if c.startswith('_')], errors='ignore')
+                    
+                    ads_raw_styled = format_dashboard_dataframe(preview_ads_raw.head(200)).style.set_properties(**{
                         'text-align': 'center', 'vertical-align': 'middle'
                     }).set_table_styles([
                         {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle')]},
                         {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle')]}
                     ])
-                    st.dataframe(raw_styled, use_container_width=True, hide_index=True)
+                    st.dataframe(ads_raw_styled, use_container_width=True, hide_index=True)
+
+                    ads_raw_excel_bytes = convert_dataframe_to_excel_download(preview_ads_raw, sheet_name="Ads_Raw_Filtered")
+                    st.download_button(
+                        label="📥 Download Filtered Ads Raw Data (.xlsx)",
+                        data=ads_raw_excel_bytes,
+                        file_name=f"Ads_Raw_Filtered_{selected_campaign_filter.replace(' ', '_')[:20]}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="btn_dl_ads_raw_filtered"
+                    )
+                else:
+                    st.info("Campaign Name column not found in ads data.")
+
+            with raw_sub_tab3:
+                st.markdown("#### 📦 Overall Sales Raw Data Product Syllable Filter & Overview")
+                if not master_sales_df.empty:
+                    product_col_candidates = [c for c in ['Item Name', 'Product Name', 'Product', 'item_name'] if c in master_sales_df.columns]
+                    if product_col_candidates:
+                        prod_col_name = product_col_candidates[0]
+                        product_syllable_input = st.text_input("Type Product Name Syllable / Keyword (e.g., 'oil', 'masala', 'atta'):", "", key="sales_raw_syllable_input")
+
+                        sales_filtered_raw = master_sales_df.copy()
+                        if product_syllable_input.strip():
+                            query_str = product_syllable_input.strip().lower()
+                            sales_filtered_raw = sales_filtered_raw[sales_filtered_raw[prod_col_name].astype(str).str.lower().str.contains(query_str, na=False)]
+
+                        f_sales_amt = round(sales_filtered_raw['_gross_amt'].sum(), 2) if '_gross_amt' in sales_filtered_raw.columns else 0.0
+                        f_sales_qty = int(sales_filtered_raw['_qty'].sum()) if '_qty' in sales_filtered_raw.columns else len(sales_filtered_raw)
+                        f_sales_orders = len(sales_filtered_raw)
+                        f_aov = round(f_sales_amt / f_sales_orders, 2) if f_sales_orders > 0 else 0.0
+
+                        scol1, scol2, scol3, scol4 = st.columns(4)
+                        with scol1: st.metric("Filtered Sales Amount", f"₹{int(round(f_sales_amt)):,}")
+                        with scol2: st.metric("Filtered Units Sold", f"{f_sales_qty:,}")
+                        with scol3: st.metric("Filtered Total Orders", f"{f_sales_orders:,}")
+                        with scol4: st.metric("Filtered AOV", f"₹{f_aov:,.2f}")
+
+                        st.markdown("##### Filtered Sales Raw Data Preview:")
+                        preview_sales_raw = sales_filtered_raw.drop(columns=[c for c in sales_filtered_raw.columns if c.startswith('_')], errors='ignore')
+
+                        sales_raw_styled = format_dashboard_dataframe(preview_sales_raw.head(200)).style.set_properties(**{
+                            'text-align': 'center', 'vertical-align': 'middle'
+                        }).set_table_styles([
+                            {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle')]},
+                            {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle')]}
+                        ])
+                        st.dataframe(sales_raw_styled, use_container_width=True, hide_index=True)
+
+                        sales_raw_excel_bytes = convert_dataframe_to_excel_download(preview_sales_raw, sheet_name="Overall_Sales_Raw_Filtered")
+                        st.download_button(
+                            label="📥 Download Filtered Sales Raw Data (.xlsx)",
+                            data=sales_raw_excel_bytes,
+                            file_name=f"Overall_Sales_Filtered_{product_syllable_input.strip().replace(' ', '_')[:15] or 'All'}.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            key="btn_dl_sales_raw_filtered"
+                        )
+                    else:
+                        st.info("Product/Item Name column not found in sales reports.")
+                else:
+                    st.info("Please upload Sales Reports to use this feature.")
 
         with main_tab2:
-            st.caption("Preview the combined Staze dataset across all uploaded files.")
+            st.caption("Preview the combined dataset across all uploaded files[cite: 7].")
             preview_clean_df = final_df.drop(columns=['_impressions', '_direct_atc', '_indirect_atc', '_atc', '_direct_orders', '_indirect_orders', '_orders', '_direct_sales', '_indirect_sales', '_sales', '_budget_consumed', '_date_dt', '_most_viewed_position', 'Ad Type Combined'], errors='ignore')
             master_styled = format_dashboard_dataframe(preview_clean_df.head(100)).style.set_properties(**{
                 'text-align': 'center', 'vertical-align': 'middle'
@@ -1195,7 +1197,7 @@ if uploaded_files:
             st.download_button(
                 label="📥 Download All MoM Comparison Tables (.xlsx - One Master File with All Sub-Tabs)",
                 data=all_pivots_bytes,
-                file_name="Staze_All_MoM_Comparison_Tables_Combined.xlsx",
+                file_name="All_MoM_Comparison_Tables_Combined.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 key="btn_dl_all_mom_pivots",
                 type="primary"
@@ -1228,7 +1230,7 @@ if uploaded_files:
                     st.download_button(
                         label="📥 Download Monthly Summary Table (.xlsx)",
                         data=excel_month_summary,
-                        file_name=f"Staze_{sheet_label}_Report.xlsx",
+                        file_name=f"{sheet_label}_Report.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         key="btn_dl_month_summary"
                     )
@@ -1242,7 +1244,7 @@ if uploaded_files:
                     st.download_button(
                         label="📥 Download Campaign Comparison Table (.xlsx)",
                         data=excel_camp,
-                        file_name="Staze_Campaign_MoM_Comparison_Report.xlsx",
+                        file_name="Campaign_MoM_Comparison_Report.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         key="btn_dl_camp_pivot"
                     )
@@ -1256,7 +1258,7 @@ if uploaded_files:
                     st.download_button(
                         label="📥 Download Ad Type Comparison Table (.xlsx)",
                         data=excel_ad,
-                        file_name="Staze_Ad_Type_MoM_Comparison_Report.xlsx",
+                        file_name="Ad_Type_MoM_Comparison_Report.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         key="btn_dl_ad_pivot"
                     )
@@ -1332,7 +1334,7 @@ if uploaded_files:
                         st.download_button(
                             label="📥 Download Keyword Comparison Table (.xlsx)",
                             data=excel_kw,
-                            file_name="Staze_Keyword_MoM_Comparison_Report.xlsx",
+                            file_name="Keyword_MoM_Comparison_Report.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                             key="btn_dl_kw_pivot"
                         )
@@ -1350,7 +1352,7 @@ if uploaded_files:
                     st.download_button(
                         label="📥 Download Weekly Comparison Table (.xlsx)",
                         data=excel_week,
-                        file_name="Staze_Weekly_MoM_Comparison_Report.xlsx",
+                        file_name="Weekly_MoM_Comparison_Report.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         key="btn_dl_week_pivot"
                     )
@@ -1367,7 +1369,7 @@ if uploaded_files:
                         st.download_button(
                             label="📥 Download Daily Tracker Table (.xlsx)",
                             data=excel_daily,
-                            file_name=f"Staze_Daily_Tracker_{tracker_month}.xlsx",
+                            file_name=f"Daily_Tracker_{tracker_month}.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                             key="btn_dl_daily_tracker"
                         )
@@ -1377,7 +1379,7 @@ if uploaded_files:
                 st.info("Please upload a Sales Report to view the Daily Tracker.")
 
         with main_tab5:
-            st.subheader("📍 City Level Overview & Staze Product Performance")
+            st.subheader("📍 City Level Overview & Product Performance")
             if has_sales_data:
                 sales_months_avail = ["All Months"] + sorted(master_sales_df['Month'].dropna().unique().tolist(), key=lambda x: MONTH_ORDER_ASC.get(str(x).strip().upper(), 99))
                 sel_city_month = st.selectbox("Select Month for City View:", sales_months_avail, key="city_month_filter")
@@ -1525,7 +1527,7 @@ if uploaded_files:
                 st.info("Please upload a Sales Report to view City Level Overview.")
 
         st.markdown("---")
-        st.subheader("💾 Download Consolidated Master Workbook (Staze Edition)")
+        st.subheader("💾 Download Consolidated Master Workbook")
         
         ads_dump_df = final_df.copy()
         
@@ -1615,7 +1617,6 @@ if uploaded_files:
 
         final_ads_dump_export = pd.DataFrame(ads_export_mapping)
 
-        # Build Overall Dump and ensure "Overall Raw" tab is created
         if not master_sales_df.empty:
             s_dump_df = master_sales_df.copy()
             if '_sales_dt' in s_dump_df.columns:
@@ -1655,10 +1656,6 @@ if uploaded_files:
         with pd.ExcelWriter(buffer_multi, engine='openpyxl') as writer:
             final_ads_dump_export.to_excel(writer, sheet_name='ADs Dump', index=False)
             final_overall_dump_export.to_excel(writer, sheet_name='Overall Dump', index=False)
-            
-            # Add "Overall Raw" tab for filtered raw sales data
-            if not master_sales_df.empty:
-                master_sales_df.drop(columns=[c for c in ['_sales_dt', 'Month', 'Date_str', 'Day', '_gross_amt', '_qty'] if c in master_sales_df.columns], errors='ignore').to_excel(writer, sheet_name='Overall Raw', index=False)
 
             for raw_tab_name, df_list in consolidated_raw_tabs.items():
                 combined_raw_tab_df = pd.concat(df_list, ignore_index=True)
@@ -1667,33 +1664,14 @@ if uploaded_files:
 
         buffer_multi.seek(0)
         st.download_button(
-            label="📥 Download Complete Staze Excel Workbook (Initial Dumps + Overall Raw + Raw Tabs)",
+            label="📥 Download Complete Excel Workbook (Initial Dumps + Raw Tabs)",
             data=buffer_multi,
-            file_name="Staze_Blinkit_Consolidated_Master_Report.xlsx",
+            file_name="Blinkit_Consolidated_Master_Report.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="primary"
         )
 
     else:
-        st.info("Please upload valid ad campaign reports matching Staze campaigns.")
+        st.info("Please upload valid ad campaign reports to start analysis.")
 else:
     st.info("Awaiting file uploads. Please upload your ad campaign spreadsheets and sales reports.")
-'''
-
-requirements_code = '''streamlit>=1.40.0
-pandas>=2.0.0
-numpy>=1.24.0
-plotly>=5.18.0
-openpyxl>=3.1.0
-jinja2>=3.1.0
-xlrd>=2.0.1
-pyxlsb>=1.0.10
-'''
-
-with open('app.py', 'w', encoding='utf-8') as f:
-    f.write(app_code)
-
-with open('requirements.txt', 'w', encoding='utf-8') as f:
-    f.write(requirements_code)
-
-print("Staze Edition app.py and requirements.txt generated successfully!")
