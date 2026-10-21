@@ -187,6 +187,18 @@ st.markdown("""
 
 st.markdown("<p style='text-align: center;'>Upload Ad Campaign reports and Overall Sales reports. System automatically filters campaigns and products containing <b>'staze'</b>, computing total sales by summing MRP values directly across all levels.</p>", unsafe_allow_html=True)
 
+MONTH_ORDER_ASC = {
+    "JANUARY": 1, "FEBRUARY": 2, "MARCH": 3, "APRIL": 4,
+    "MAY": 5, "JUNE": 6, "JULY": 7, "AUGUST": 8,
+    "SEPTEMBER": 9, "OCTOBER": 10, "NOVEMBER": 11, "DECEMBER": 12
+}
+
+def get_calendar_months_asc(df_input):
+    if df_input is None or 'Month' not in df_input.columns:
+        return []
+    months = [str(x).strip().upper() for x in df_input['Month'].dropna().unique()]
+    return sorted(months, key=lambda x: MONTH_ORDER_ASC.get(x, 99))
+
 def style_and_export_pivot(pivot_df, sheet_name="Comparison"):
     buffer = io.BytesIO()
     wb = openpyxl.Workbook()
@@ -549,7 +561,7 @@ if sales_dfs_list:
     else:
         master_sales_df['_qty'] = 1.0
 
-    # Total sales calculation: Just add all MRP (no multiplication with quantity across campaign, product, and other levels)
+    # Total sales calculation: Just add all MRP (no multiplication with quantity)
     if mrp_col:
         master_sales_df['_gross_amt'] = pd.to_numeric(master_sales_df[mrp_col].astype(str).str.replace(',', ''), errors='coerce').fillna(0.0)
     else:
@@ -668,7 +680,6 @@ if uploaded_files:
     if consolidated_dfs:
         final_df = pd.concat(consolidated_dfs, ignore_index=True)
         
-        # Filter campaigns strictly for those with "staze" mentioned in the campaign name
         camp_col_candidates = [c for c in ['Campaign Name', 'Campaign', 'CampaignId', 'Campaign ID'] if c in final_df.columns]
         if camp_col_candidates:
             c_col = camp_col_candidates[0]
@@ -744,16 +755,6 @@ if uploaded_files:
             final_df['Ad Type Combined'] = final_df[match_col].fillna("Other").astype(str).str.title()
         else:
             final_df['Ad Type Combined'] = "Other"
-
-        MONTH_ORDER_ASC = {
-            "JANUARY": 1, "FEBRUARY": 2, "MARCH": 3, "APRIL": 4,
-            "MAY": 5, "JUNE": 6, "JULY": 7, "AUGUST": 8,
-            "SEPTEMBER": 9, "OCTOBER": 10, "NOVEMBER": 11, "DECEMBER": 12
-        }
-
-        def get_calendar_months_asc(df_input):
-            months = [str(x).strip().upper() for x in df_input['Month'].dropna().unique()]
-            return sorted(months, key=lambda x: MONTH_ORDER_ASC.get(x, 99))
 
         def create_monthly_summary_table(df_input, selected_months=None):
             working_df = df_input.dropna(subset=['Month']).copy()
@@ -1050,6 +1051,86 @@ if uploaded_files:
                 summary_row = pd.DataFrame([summary_dict])
                 res_df = pd.concat([res_df, summary_row], ignore_index=True)
 
+            return res_df
+
+        def create_daily_tracker_table(selected_month):
+            if master_sales_df.empty or '_sales_dt' not in master_sales_df.columns:
+                return pd.DataFrame()
+
+            m_df = master_sales_df[master_sales_df['Month'] == selected_month].copy()
+            if m_df.empty:
+                return pd.DataFrame()
+
+            ad_df = final_df[final_df['Month'] == selected_month].copy() if 'Month' in final_df.columns else pd.DataFrame()
+
+            rows = []
+            for day_i in range(1, 32):
+                day_sales = m_df[m_df['Day'] == day_i]
+                ov_sales = round(day_sales['_gross_amt'].sum(), 2)
+                ov_orders = len(day_sales)
+                
+                day_spends = 0.0
+                day_imp = 0.0
+                day_atc = 0.0
+                day_ad_sales = 0.0
+                day_ad_orders = 0.0
+
+                if not ad_df.empty and 'Date' in ad_df.columns:
+                    matched_ad = ad_df[ad_df['_date_dt'].dt.day == day_i]
+                    day_spends = round(matched_ad['_budget_consumed'].sum(), 2)
+                    day_imp = matched_ad['_impressions'].sum()
+                    day_atc = matched_ad['_atc'].sum()
+                    day_ad_sales = round(matched_ad['_sales'].sum(), 2)
+                    day_ad_orders = int(matched_ad['_orders'].sum())
+
+                cpm = round((day_spends / day_imp) * 1000, 2) if day_imp > 0 else 0.0
+                roas = round(day_ad_sales / day_spends, 2) if day_spends > 0 else 0.0
+                tacos = round((day_spends / ov_sales) * 100, 2) if ov_sales > 0 else 0.0
+                troas = round(ov_sales / day_spends, 2) if day_spends > 0 else 0.0
+
+                rows.append({
+                    'Date (Day)': f"Day {day_i}",
+                    'CPM': cpm,
+                    'Impressions': int(day_imp),
+                    'Spends': day_spends,
+                    'Ad Sales': day_ad_sales,
+                    'Total Sales': ov_sales,
+                    'Ad Orders': day_ad_orders,
+                    'Total Orders': ov_orders,
+                    'ATC': int(day_atc),
+                    'TACOS': f"{tacos:.2f}%",
+                    'Ad ROAS': roas,
+                    'TROAS': troas
+                })
+
+            res_df = pd.DataFrame(rows)
+            total_sales_sum = res_df['Total Sales'].sum()
+            total_orders_sum = res_df['Total Orders'].sum()
+            total_spends_sum = res_df['Spends'].sum()
+            total_ad_sales_sum = res_df['Ad Sales'].sum()
+            total_ad_orders_sum = res_df['Ad Orders'].sum()
+            total_atc_sum = res_df['ATC'].sum()
+            total_imp_sum = res_df['Impressions'].sum()
+            avg_cpm = round(res_df['CPM'].mean(), 2)
+            avg_roas = round(total_ad_sales_sum / total_spends_sum, 2) if total_spends_sum > 0 else 0.0
+            avg_tacos = round((total_spends_sum / total_sales_sum) * 100, 2) if total_sales_sum > 0 else 0.0
+            avg_troas = round(total_sales_sum / total_spends_sum, 2) if total_spends_sum > 0 else 0.0
+
+            summary_row = pd.DataFrame([{
+                'Date (Day)': 'Aggregate / Average',
+                'CPM': avg_cpm,
+                'Impressions': total_imp_sum,
+                'Spends': total_spends_sum,
+                'Ad Sales': total_ad_sales_sum,
+                'Total Sales': total_sales_sum,
+                'Ad Orders': total_ad_orders_sum,
+                'Total Orders': total_orders_sum,
+                'ATC': int(total_atc_sum),
+                'TACOS': f"{avg_tacos:.2f}%",
+                'Ad ROAS': avg_roas,
+                'TROAS': avg_troas
+            }])
+            res_df = pd.concat([res_df, summary_row], ignore_index=True)
             return res_df
 
         def _format_dashboard_value(value, column_name=""):
