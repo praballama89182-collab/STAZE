@@ -187,7 +187,7 @@ st.markdown("""
 
 st.markdown("<p style='text-align: center;'>Upload Ad Campaign reports and Overall Sales reports. System automatically filters campaigns and products containing <b>'staze'</b>, computing total sales by summing MRP values directly across all levels.</p>", unsafe_allow_html=True)
 
-# Master Item -> Franchise Lookup Dictionary in App Memory
+# Master Item -> Sub Category Lookup Dictionary for Overall Dump Franchise VLOOKUP
 OVERALL_FRANCHISE_MASTER = {
     "Staze Gloss Lock 2-in-1 Liquid Lipstick (I'm Shy) 7 g": "2 in 1 Gloss Lock",
     "Staze Gloss Lock 2 in 1 Liquid Lipstick (I'm Pretty) 7 g": "2 in 1 Gloss Lock",
@@ -199,11 +199,11 @@ OVERALL_FRANCHISE_MASTER = {
     "Staze Twin Flame 2 in 1 Lipstick + Lip Liner (05 Hot Date) 2 g": "2 in 1 Twin Flame",
     "Staze Twin Flame 2-in-1 Lip Liner + Lipstick (Love Language) 2 g": "2 in 1 Twin Flame",
     "Staze Twin Flame 2 in 1 Lip Liner & Lipstick (02 Soft Launch) 2 g": "2 in 1 Twin Flame",
-    "Staze Twin Flame 2 in 1 Lip Liner & Lipstick (04 Main Squeeze) 2 g": "2 in 1 Twin Flame",
+    "Staze Twin Flame 2 in 1 Lip Liner & Lipstick (04 Main Squeez) 2 g": "2 in 1 Twin Flame",
     "Staze Y.U.M.M.Y. Lip Gloss (Lush Berry) 2 g": "Yummy",
     "Staze 9to9 Y.U.M.M.Y. Lip Gloss Balm (04 Strawberry Jelly) 2 g": "Yummy",
     "Staze Y.U.M.M.Y. Lip Gloss (Salted Caramel) 2 g": "Yummy",
-    "Staze 9to9 Y.U.M.M.Y. Lip Gloss Balm (05 Espresso Brown) 2 g": "Yummy",
+    "Staze 9to9 Y.U.M.M.Y Lip Gloss Balm (05 Espresso Brown) 2 g": "Yummy",
     "Staze 9to9 Pout On Lip Crayon (10 Royally Ruby) 3.5 g": "Lip Crayon",
     "Staze 9to9 Pout On Lip Crayon (01 Nude Whisper) 3.5 g": "Lip Crayon",
     "Staze 9to9 Pout On Lip Crayon (Dusty Rose) 10 g": "Lip Crayon",
@@ -236,7 +236,7 @@ OVERALL_FRANCHISE_MASTER = {
     "Staze 9to9 She’s Expensive Body Shimmer 50 ml": "Body Shimmer"
 }
 
-# Master Campaign Name -> Fields Lookup Dictionary in App Memory for Ads Dump VLOOKUP
+# Master Campaign Name -> Fields Lookup Dictionary for Ads Dump VLOOKUP
 ADS_CAMPAIGN_MASTER = {
     "staze | gloss lock | pb | bounce": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Category", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
     "staze | gloss lock | pb | match product": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Match Product", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
@@ -1930,7 +1930,7 @@ if uploaded_files:
                 s_dump_df['Duration (Week)'] = np.nan
                 s_dump_df['date'] = np.nan
 
-            # Apply VLOOKUP for Franchise column using item_name
+            # Apply VLOOKUP for Franchise column using item_name mapped to Sub Category
             s_dump_df['Franchise_Mapped'] = s_dump_df['_product_name'].map(OVERALL_FRANCHISE_MASTER).fillna("")
 
             overall_export_mapping = {
