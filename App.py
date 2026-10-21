@@ -187,7 +187,7 @@ st.markdown("""
 
 st.markdown("<p style='text-align: center;'>Upload Ad Campaign reports and Overall Sales reports. System automatically filters campaigns and products containing <b>'staze'</b>, computing total sales by summing MRP values directly across all levels.</p>", unsafe_allow_html=True)
 
-# Updated Overall Master Item -> Francise Lookup Dictionary (matching master report)
+# Updated Overall Master Item -> Francise Lookup Dictionary
 OVERALL_FRANCHISE_MASTER = {
     "Staze Gloss Lock 2-in-1 Liquid Lipstick (I'm Shy) 7 g": "Gloss Lock",
     "Staze Gloss Lock 2 in 1 Liquid Lipstick (I'm Pretty) 7 g": "Gloss Lock",
@@ -235,6 +235,26 @@ OVERALL_FRANCHISE_MASTER = {
     "Staze HD Bright Oil-Controlling Compact (128C Cashmere) 9 g": "Compact",
     "Staze 9to9 She’s Expensive Body Shimmer 50 ml": "Body Shimmer"
 }
+
+# City Name -> Region Master Dictionary (T-10 vs ROI based on master mapping)
+CITY_REGION_MASTER = {
+    "Ahmedabad": "T-10",
+    "Bengaluru": "T-10",
+    "Chennai": "T-10",
+    "Delhi": "T-10",
+    "Gurgaon": "T-10",
+    "Hyderabad": "T-10",
+    "Kolkata": "T-10",
+    "Lucknow": "T-10",
+    "Mumbai": "T-10",
+    "Pune": "T-10"
+}
+
+def get_region_for_city(city_val):
+    if pd.isna(city_val):
+        return "ROI"
+    c_str = str(city_val).strip().title()
+    return CITY_REGION_MASTER.get(c_str, "ROI")
 
 # Master Campaign Name -> Fields Lookup Dictionary for Ads Dump VLOOKUP
 ADS_CAMPAIGN_MASTER = {
@@ -1943,8 +1963,15 @@ if uploaded_files:
                 s_dump_df['Duration (Week)'] = np.nan
                 s_dump_df['date'] = np.nan
 
-            # Apply VLOOKUP for Franchise column using item_name mapped to the new FRANCISE master dictionary
+            # Apply VLOOKUP for Franchise column using item_name mapped to the FRANCISE master dictionary
             s_dump_df['Franchise_Mapped'] = s_dump_df['_product_name'].map(OVERALL_FRANCHISE_MASTER).fillna("")
+
+            # Map Region column dynamically based on city_name using CITY_REGION_MASTER (T-10 vs ROI)
+            raw_city_series = safe_get_col(s_dump_df, ['Supply City', 'city_name', 'City'])
+            if isinstance(raw_city_series, pd.Series):
+                s_dump_df['Region_Mapped'] = raw_city_series.apply(get_region_for_city)
+            else:
+                s_dump_df['Region_Mapped'] = "ROI"
 
             overall_export_mapping = {
                 'item_id': safe_get_col(s_dump_df, ['Item Id', 'item_id', 'SKU ID', 'Product ID']),
@@ -1953,14 +1980,14 @@ if uploaded_files:
                 'manufacturer_id': safe_get_col(s_dump_df, ['manufacturer_id', 'Manufacturer ID']),
                 'manufacturer_name': safe_get_col(s_dump_df, ['manufacturer_name', 'Manufacturer', 'Manufacturer Name']),
                 'city_id': safe_get_col(s_dump_df, ['city_id', 'City ID']),
-                'city_name': safe_get_col(s_dump_df, ['Supply City', 'city_name', 'City']),
+                'city_name': raw_city_series,
                 'category': safe_get_col(s_dump_df, ['Business Category', 'category', 'Category']),
                 'date': s_dump_df['date'],
                 'Duration (Month)': s_dump_df['Duration (Month)'],
                 'Duration (Week)': s_dump_df['Duration (Week)'],
                 'qty_sold': s_dump_df['_qty'],
                 'mrp': safe_get_col(s_dump_df, ['MRP (Rs)', 'mrp', 'MRP', 'Selling Price (Rs)']),
-                'Region': safe_get_col(s_dump_df, ['Supply State', 'Region', 'State'])
+                'Region': s_dump_df['Region_Mapped']
             }
             final_overall_dump_export = pd.DataFrame(overall_export_mapping)
         else:
@@ -1982,7 +2009,7 @@ if uploaded_files:
 
         buffer_multi.seek(0)
         st.download_button(
-            label="📥 Download Complete ExcelWorkbook (Initial Dumps + Raw Tabs)",
+            label="📥 Download Complete Excel Workbook (Initial Dumps + Raw Tabs)",
             data=buffer_multi,
             file_name="STAZE_Blinkit_Consolidated_Master_Report.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
