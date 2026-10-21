@@ -275,7 +275,6 @@ ADS_CAMPAIGN_MASTER = {
     "staze | 9to9 | lip crayon | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
     "staze | 9to9 | yummy | pan india | comp | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
     "staze | 9to9 | nude shimmer | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Nude Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | twin flame | top 5a | pan india | pgt | gen | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
     "staze | 9to9 | all products | pan india | brand | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "All Products", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
     "staze | gloss lock | pb | cart recommendation": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Cart Recommendation", "Franchise": "2 in 1 Gloss Lock", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
     "staze | 9to9 | twin flame | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
@@ -288,7 +287,6 @@ ADS_CAMPAIGN_MASTER = {
     "staze | 9to9 | twin flame | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "2 in 1 Twin Flame", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
     "staze | 9to9 | lip crayon | pan india | pa | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Lip Crayon", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
     "staze | 9to9 | yummy | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Yummy", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
-    "staze | 9to9 | nude shimmer | pan india | kw | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Nude Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"},
     "staze | 9to9 | body shimmer | pan india | pgt | dv": {"City": "Pan India", "Ad type": "Product Listing", "Targeting Type": "Keyword", "Franchise": "Body Shimmer", "Category": "Beauty & Personal Care", "Sub Category": "Makeup"}
 }
 
@@ -1848,27 +1846,18 @@ if uploaded_files:
             return np.nan
 
         # VLOOKUP helper for Ads Dump missing fields based on Campaign Name
-        def lookup_ads_field(camp_name_val, field_key, default_series):
+        def lookup_ads_field(camp_name_val, field_key, default_val):
             if pd.isna(camp_name_val):
-                return default_series
+                return default_val
             c_str = str(camp_name_val).strip().lower()
             if c_str in ADS_CAMPAIGN_MASTER:
-                return ADS_CAMPAIGN_MASTER[c_str].get(field_key, default_series)
-            # Fuzzy/partial match
+                return ADS_CAMPAIGN_MASTER[c_str].get(field_key, default_val)
             for master_k, master_v in ADS_CAMPAIGN_MASTER.items():
                 if master_k in c_str or c_str in master_k:
-                    return master_v.get(field_key, default_series)
-            return default_series
+                    return master_v.get(field_key, default_val)
+            return default_val
 
         raw_camp_series = safe_get_col(ads_dump_df, ['Campaign Name', 'Campaign', 'Campaign ID'])
-
-        v_city = []
-        v_ad_type = []
-        v_targeting_type = []
-        v_franchise = []
-        v_category = []
-        v_sub_category = []
-
         raw_city = safe_get_col(ads_dump_df, ['City', 'Supply City', 'city_name'])
         raw_ad_type = safe_get_col(ads_dump_df, ['Ad type', 'Ad Type', 'Match Type', 'Ad Type Combined'])
         raw_target = safe_get_col(ads_dump_df, ['Targeting Type', 'Targeting'])
@@ -1876,15 +1865,17 @@ if uploaded_files:
         raw_cat = safe_get_col(ads_dump_df, ['Category', 'category'])
         raw_sub_cat = safe_get_col(ads_dump_df, ['Sub Category', 'Subcategory'])
 
+        v_city, v_ad_type, v_targeting_type, v_franchise, v_category, v_sub_category = [], [], [], [], [], []
+
         for idx, row in ads_dump_df.iterrows():
-            camp_val = raw_camp_series.iloc[idx] if isinstance(raw_camp_series, pd.Series) else np.nan
+            camp_val = row[raw_camp_series.name] if isinstance(raw_camp_series, pd.Series) and raw_camp_series.name in row else (raw_camp_series.iloc[0] if isinstance(raw_camp_series, pd.Series) and not raw_camp_series.empty else np.nan)
             
-            c_fallback = raw_city.iloc[idx] if isinstance(raw_city, pd.Series) and pd.notna(raw_city.iloc[idx]) else "Pan India"
-            ad_fallback = raw_ad_type.iloc[idx] if isinstance(raw_ad_type, pd.Series) and pd.notna(raw_ad_type.iloc[idx]) else "Product Listing"
-            tg_fallback = raw_target.iloc[idx] if isinstance(raw_target, pd.Series) and pd.notna(raw_target.iloc[idx]) else "Keyword"
-            fr_fallback = raw_franchise.iloc[idx] if isinstance(raw_franchise, pd.Series) and pd.notna(raw_franchise.iloc[idx]) else "Staze"
-            cat_fallback = raw_cat.iloc[idx] if isinstance(raw_cat, pd.Series) and pd.notna(raw_cat.iloc[idx]) else "Beauty & Personal Care"
-            sub_fallback = raw_sub_cat.iloc[idx] if isinstance(raw_sub_cat, pd.Series) and pd.notna(raw_sub_cat.iloc[idx]) else "Makeup"
+            c_fallback = row.get(raw_city.name, "Pan India") if isinstance(raw_city, pd.Series) and raw_city.name in row else "Pan India"
+            ad_fallback = row.get(raw_ad_type.name, "Product Listing") if isinstance(raw_ad_type, pd.Series) and raw_ad_type.name in row else "Product Listing"
+            tg_fallback = row.get(raw_target.name, "Keyword") if isinstance(raw_target, pd.Series) and raw_target.name in row else "Keyword"
+            fr_fallback = row.get(raw_franchise.name, "Staze") if isinstance(raw_franchise, pd.Series) and raw_franchise.name in row else "Staze"
+            cat_fallback = row.get(raw_cat.name, "Beauty & Personal Care") if isinstance(raw_cat, pd.Series) and raw_cat.name in row else "Beauty & Personal Care"
+            sub_fallback = row.get(raw_sub_cat.name, "Makeup") if isinstance(raw_sub_cat, pd.Series) and raw_sub_cat.name in row else "Makeup"
 
             v_city.append(lookup_ads_field(camp_val, 'City', c_fallback))
             v_ad_type.append(lookup_ads_field(camp_val, 'Ad type', ad_fallback))
