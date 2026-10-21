@@ -187,7 +187,7 @@ st.markdown("""
 
 st.markdown("<p style='text-align: center;'>Upload Ad Campaign reports and Overall Sales reports. System automatically filters campaigns and products containing <b>'staze'</b>, computing total sales by summing MRP values directly across all levels.</p>", unsafe_allow_html=True)
 
-# Updated Overall Master Item -> Francise Lookup Dictionary (matching new master report)
+# Updated Overall Master Item -> Francise Lookup Dictionary (matching master report)
 OVERALL_FRANCHISE_MASTER = {
     "Staze Gloss Lock 2-in-1 Liquid Lipstick (I'm Shy) 7 g": "Gloss Lock",
     "Staze Gloss Lock 2 in 1 Liquid Lipstick (I'm Pretty) 7 g": "Gloss Lock",
@@ -1845,7 +1845,7 @@ if uploaded_files:
                     return df_source[name]
             return np.nan
 
-        # VLOOKUP helper for Ads Dump missing fields based on Campaign Name
+        # VLOOKUP helper for Ads Dump missing fields based on Campaign Name with smart substring fallback
         def lookup_ads_field(camp_name_val, field_key, default_val):
             if pd.isna(camp_name_val):
                 return default_val
@@ -1855,6 +1855,19 @@ if uploaded_files:
             for master_k, master_v in ADS_CAMPAIGN_MASTER.items():
                 if master_k in c_str or c_str in master_k:
                     return master_v.get(field_key, default_val)
+            
+            # Dynamic substring fallback for Franchise if not found in exact master
+            if field_key == 'Franchise':
+                if 'gloss lock' in c_str: return "Gloss Lock"
+                if 'twin flame' in c_str: return "Twin Flame"
+                if 'yummy' in c_str: return "Yummy"
+                if 'lip crayon' in c_str: return "Lip Crayon"
+                if 'mascara' in c_str: return "Mascara"
+                if 'body shimmer' in c_str: return "Body Shimmer"
+                if 'compact' in c_str: return "Compact"
+                if 'face palette' in c_str: return "Face Palette"
+                if 'brow' in c_str: return "Brow Definer"
+            
             return default_val
 
         raw_camp_series = safe_get_col(ads_dump_df, ['Campaign Name', 'Campaign', 'Campaign ID'])
@@ -1873,7 +1886,7 @@ if uploaded_files:
             c_fallback = row.get(raw_city.name, "Pan India") if isinstance(raw_city, pd.Series) and raw_city.name in row else "Pan India"
             ad_fallback = row.get(raw_ad_type.name, "Product Booster (Keyword)") if isinstance(raw_ad_type, pd.Series) and raw_ad_type.name in row else "Product Booster (Keyword)"
             tg_fallback = row.get(raw_target.name, "Generic") if isinstance(raw_target, pd.Series) and raw_target.name in row else "Generic"
-            fr_fallback = row.get(raw_franchise.name, "Staze") if isinstance(raw_franchise, pd.Series) and raw_franchise.name in row else "Staze"
+            fr_fallback = row.get(raw_franchise.name, "Gloss Lock") if isinstance(raw_franchise, pd.Series) and raw_franchise.name in row else "Gloss Lock"
             cat_fallback = row.get(raw_cat.name, "Beauty & Personal Care") if isinstance(raw_cat, pd.Series) and raw_cat.name in row else "Beauty & Personal Care"
             sub_fallback = row.get(raw_sub_cat.name, "Makeup") if isinstance(raw_sub_cat, pd.Series) and raw_sub_cat.name in row else "Makeup"
 
@@ -1969,7 +1982,7 @@ if uploaded_files:
 
         buffer_multi.seek(0)
         st.download_button(
-            label="📥 Download Complete Excel Workbook (Initial Dumps + Raw Tabs)",
+            label="📥 Download Complete ExcelWorkbook (Initial Dumps + Raw Tabs)",
             data=buffer_multi,
             file_name="STAZE_Blinkit_Consolidated_Master_Report.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
